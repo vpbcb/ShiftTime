@@ -9,12 +9,22 @@
 
 <style>
 body { margin:0; background:#f6f7f9; font-family:Arial, sans-serif; }
-.wrap { max-width:720px; margin:auto; padding:18px; }
-.card { background:#fff; border:1px solid #e6e8ee; border-radius:12px; padding:14px; margin-bottom:12px; }
-h1 { font-size:20px; margin:0 0 10px; }
+.wrap { max-width:720px; margin:auto; padding:14px; }
+.card { background:#fff; border:1px solid #e6e8ee; border-radius:12px; padding:12px; margin-bottom:10px; }
+h1 { font-size:20px; margin:0; }
 
 .row { display:grid; grid-template-columns:1fr; gap:10px; }
 @media (min-width:640px){ .row.two { grid-template-columns:1fr 1fr; } }
+
+/* держим 2 колонки даже на телефоне для Вылет / ΔUTC */
+.row.keepTwo{
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+}
+@media (max-width:420px){
+  .row.keepTwo{ gap:8px; }
+  label{ font-size:13px; }
+}
 
 label { display:grid; gap:6px; font-size:14px; }
 
@@ -26,31 +36,27 @@ input, button {
   cursor:pointer;
 }
 
-/* ==== ПОЛЕ ВРЕМЕНИ ==== */
-input[type="time"]{
-  width:120px;
-  font-size:18.5px;     /* +15% */
-  text-align:center;    /* центр */
-  justify-self:start;
-}
-
-/* ==== ПОЛЕ ДЕЛЬТА UTC (как поле 1) ==== */
-input[type="number"]{
+/* поля времени и UTC */
+input[type="time"], input[type="number"]{
   width:120px;
   font-size:18.5px;
   text-align:center;
   justify-self:start;
 }
 
-/* КНОПКИ РЕЖИМА */
+/* кнопки режима */
 .modeButtons { display:flex; gap:10px; }
 .modeBtn { flex:1; font-weight:600; }
-.modeBtn.active { background:#1976d2; color:#fff; border-color:#1976d2; }
+.modeBtn.active {
+  background:#1976d2;
+  color:#fff;
+  border-color:#1976d2;
+}
 
-/* Переключатели */
+/* переключатели */
 .toggleBtn { font-weight:600; }
 
-/* Анимация Cabin Crew */
+/* анимация Cabin Crew */
 #ccBlock {
   overflow:hidden;
   max-height:0;
@@ -58,21 +64,11 @@ input[type="number"]{
   transform:translateY(-6px);
   transition:max-height 260ms ease, opacity 260ms ease, transform 260ms ease;
 }
-#ccBlock.open {
-  max-height:180px;
-  opacity:1;
-  transform:translateY(0);
-}
+#ccBlock.open { max-height:180px; opacity:1; transform:translateY(0); }
 
-/* Результаты */
-.results3 {
-  display:grid;
-  grid-template-columns:1fr;
-  gap:10px;
-}
-@media (min-width:640px){
-  .results3 { grid-template-columns:1fr 1fr 1fr; }
-}
+/* результаты */
+.results3 { display:grid; grid-template-columns:1fr; gap:10px; }
+@media (min-width:640px){ .results3 { grid-template-columns:1fr 1fr 1fr; } }
 .resultBox { text-align:center; }
 
 .pill {
@@ -83,35 +79,22 @@ input[type="number"]{
   background:#f0f2f7;
   border:1px solid #e6e8ee;
 }
+.out { font-size:21px; font-weight:700; margin-top:6px; }
 
-.out {
-  font-size:21px;   /* общий размер времени */
-  font-weight:700;
-  margin-top:6px;
-}
-
-.hint { font-size:12px; color:#5b6474; }
-
-/* LDT: делаем соосно */
-.ldtBox{
-  text-align:center;       /* выравниваем как результаты */
-}
+.ldtBox{ text-align:center; }
 </style>
 </head>
 
 <body>
 <div class="wrap">
 
+<!-- КОМПАКТНЫЙ ЗАГОЛОВОК -->
 <div class="card">
   <h1>Расчет смены</h1>
-  <div class="hint">Результаты пересчитываются моментально</div>
 </div>
 
 <div class="card">
-  <div class="hint" style="margin-bottom:10px;">Ввод данных</div>
-
-  <!-- 1) и Дельта UTC? в одной строке -->
-  <div class="row two">
+  <div class="row keepTwo">
     <label>
       1) Время вылета по расписанию (МСК)
       <input id="depTime" type="time" value="05:00" step="60">
@@ -126,12 +109,8 @@ input[type="number"]{
   <label style="margin-top:10px;">
     2) Режим расчета
     <div class="modeButtons">
-      <button type="button" id="btnFlight" class="modeBtn active" onclick="setCrew('flight')">
-        Flight Crew
-      </button>
-      <button type="button" id="btnCabin" class="modeBtn" onclick="setCrew('cabin')">
-        Cabin Crew
-      </button>
+      <button type="button" id="btnFlight" class="modeBtn active" onclick="setCrew('flight')">Flight Crew</button>
+      <button type="button" id="btnCabin" class="modeBtn" onclick="setCrew('cabin')">Cabin Crew</button>
     </div>
   </label>
 
@@ -140,7 +119,6 @@ input[type="number"]{
       3) Аэропорт начала смены
       <button type="button" id="airportBtn" class="toggleBtn" onclick="toggleAirport()">UUEE</button>
     </label>
-
     <label>
       7) Усиленный экипаж?
       <button type="button" id="reinforcedBtn" class="toggleBtn" onclick="toggleReinforced()">Нет</button>
@@ -152,7 +130,6 @@ input[type="number"]{
       4) Кол-во посадок по плану
       <button type="button" id="landingsBtn" class="toggleBtn" onclick="toggleLandings()">1–2</button>
     </label>
-
     <label>
       5) Продление КВС?
       <button type="button" id="extendBtn" class="toggleBtn" onclick="toggleExtend()">Нет</button>
@@ -183,8 +160,6 @@ input[type="number"]{
       6) Время, необходимое на обратный полет
       <input id="flightTime" type="time" value="02:30" step="60">
     </label>
-
-    <!-- LDT теперь соосно: по центру, и размер out общий -->
     <div class="ldtBox">
       <div class="pill">LDT</div>
       <div class="out" id="outLdt">—</div>
@@ -201,10 +176,8 @@ function setCrew(type){
   cabincrew=(type==="cabin")?"да":"нет";
   btnFlight.classList.toggle("active",cabincrew==="нет");
   btnCabin.classList.toggle("active",cabincrew==="да");
-
-  if(cabincrew==="да") ccBlock.classList.add("open");
-  else{
-    ccBlock.classList.remove("open");
+  cabincrew==="да"?ccBlock.classList.add("open"):ccBlock.classList.remove("open");
+  if(cabincrew==="нет"){
     airport="UUEE"; reinforced="нет";
     airportBtn.textContent="UUEE"; reinforcedBtn.textContent="Нет";
   }
@@ -215,21 +188,14 @@ function toggleReinforced(){ reinforced=reinforced==="нет"?"да":"нет"; r
 function toggleLandings(){ landings=landings==="1-2"?"3-4":"1-2"; landingsBtn.textContent=landings==="1-2"?"1–2":"3–4"; render(); }
 function toggleExtend(){ extend=extend==="нет"?"да":"нет"; extendBtn.textContent=extend==="да"?"Да":"Нет"; render(); }
 
-function parseTime(t){ if(!t) return null; const [h,m]=t.split(":").map(Number); return h*60+m; }
+function parseTime(t){ if(!t) return null; const[a,b]=t.split(":").map(Number); return a*60+b; }
 function fmt(m){ m=(m+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
 
 function calculate(){
-  const dep=parseTime(depTime.value);
-  const flt=parseTime(flightTime.value);
+  const dep=parseTime(depTime.value), flt=parseTime(flightTime.value);
   if(dep==null||flt==null) return null;
-
-  // deltaUtc пока не участвует в расчетах (логика не меняется).
-  // Поле добавлено для будущего использования.
-  // const delta = Number(deltaUtc.value || 0);
-
   const checkIn=dep-((cabincrew==="да"&&airport==="UUEE")?90:60);
   const isDay=checkIn>=361&&checkIn<=1319;
-
   let norm=null;
   if(cabincrew==="да"&&reinforced==="да"){
     norm=(landings==="1-2")?(extend==="да"?960:780):(extend==="да"?900:720);
@@ -238,9 +204,8 @@ function calculate(){
     if(landings==="3-4") norm=isDay?(extend==="да"?750:630):(extend==="да"?720:600);
   }
   if(!norm) return null;
-
   const end=checkIn+norm;
-  return {duration:end-checkIn, eng:end-30, end, ldt:end-30-flt};
+  return{duration:end-checkIn,eng:end-30,end,ldt:end-30-flt};
 }
 
 function render(){
