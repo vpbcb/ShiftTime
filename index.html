@@ -26,6 +26,9 @@
   --resultTimeFs:21px;
 
   --hintFs:12.5px;
+
+  /* единая высота для кнопок (Flight/Cabin, Airport, Reinforced, Landings, Extend) */
+  --actionBtnH:46px;
 }
 
 *{ font-family:Arial, sans-serif; box-sizing:border-box; }
@@ -40,6 +43,12 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   margin-bottom:10px;
 }
 
+/* заголовок: заливка как у активных кнопок МСК/UTC/Local */
+.headerCard{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+}
 h1{ font-size:20px; margin:0; text-align:center; }
 
 input, button, select{
@@ -56,10 +65,15 @@ input[type="time"]{
   font-size:var(--timeFs);
   text-align:center;
 }
+
+/* delta UTC можно уменьшить по высоте */
 select.deltaSelect{
   width:120px;
   font-size:var(--timeFs);
   text-align:center;
+  padding-top:6px;
+  padding-bottom:6px;
+  height:38px;
 }
 
 /* Заголовки-подложки */
@@ -77,7 +91,7 @@ select.deltaSelect{
   white-space:nowrap;
 }
 
-/* ВАЖНО: чтобы кнопка с классом fieldTitle НЕ наследовала padding:10px от button */
+/* чтобы кнопка с классом fieldTitle НЕ наследовала padding:10px от button */
 button.fieldTitle{
   padding:var(--titlePadV) var(--titlePadH);
   border-radius:999px;
@@ -87,21 +101,21 @@ button.fieldTitle{
   line-height:1.1;
 }
 
-/* значок ? в кружке (для элементов с подсказкой) */
+/* значок ? в кружке — НЕ перекрывает текст (справа снаружи, вверху) */
 .hasHint{ position:relative; }
 .hasHint::after{
   content:"?";
   position:absolute;
-  top:3px;
-  right:6px;
-  width:14px;
-  height:14px;
+  top:-6px;
+  right:-6px;
+  width:16px;
+  height:16px;
   border-radius:50%;
   border:1px solid var(--ctlBorder);
   background:#fff;
   color:#333;
-  font-size:10px;
-  line-height:14px;
+  font-size:11px;
+  line-height:16px;
   text-align:center;
   pointer-events:none;
 }
@@ -109,16 +123,16 @@ button.fieldTitle{
 /* 1) блок вылета */
 .depGrid{
   display:grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr;
   grid-template-areas:
-    "title tz"
-    "inputs inputs"
+    "title title"
+    "inputs tz"
     "delta delta";
   gap:8px 10px;
   align-items:center;
 }
 .depTitle{ grid-area:title; }
-.depTz{ grid-area:tz; justify-self:end; }
+.depTz{ grid-area:tz; justify-self:stretch; }
 .depLine{
   grid-area:inputs;
   display:flex;
@@ -144,6 +158,16 @@ button.fieldTitle{
 
 .toggleBtn{ font-weight:600; }
 
+/* единые размеры/высоты для всех "основных" кнопок */
+.actionBtn{
+  height:var(--actionBtnH);
+  padding-top:0;
+  padding-bottom:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
 /* Анимация Cabin Crew */
 #ccBlock{
   overflow:hidden;
@@ -154,18 +178,17 @@ button.fieldTitle{
 }
 #ccBlock.open{ max-height:260px; opacity:1; transform:translateY(0); }
 
-/* Δ UTC блок (теперь всегда отображается, без завязки на Local) */
+/* Δ UTC блок */
 #deltaFold{ grid-area:delta; }
 .deltaInner{
   display:flex;
   align-items:center;
-  gap:8px;         /* вернули как было */
-  padding-top:6px; /* вернули как было */
+  gap:8px;
+  padding-top:6px;
 }
 
 /* ===== РЕЗУЛЬТАТЫ ===== */
 .results3{ display:grid; gap:12px; }
-@media (min-width:640px){ .results3{ grid-template-columns:1fr 1fr 1fr; } }
 
 .resultCard{
   border:1px solid var(--border);
@@ -215,25 +238,43 @@ button.pill{
 .mtLbl{ font-size:14px; color:var(--muted); }
 
 /* 6)+LDT */
-.sixRow{ display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start; }
+.sixRow{ display:grid; grid-template-columns:1fr; gap:10px; align-items:start; }
 
-/* ======= ТОЛЬКО ВЕРТИКАЛЬНАЯ ОРИЕНТАЦИЯ / МОБИЛЬНЫЙ ПОРТРЕТ ======= */
+/* 6) в одну линию */
+.sixInline{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  align-items:stretch;
+}
+.fieldTitle.wrap2{
+  white-space:normal;
+  line-height:1.15;
+  height:42px;
+  border-radius:12px;
+  width:100%;
+}
+.sixInline input[type="time"]{
+  height:42px;
+  padding-top:0;
+  padding-bottom:0;
+}
+
+/* пары 3/7 и 4/5 */
+.pairRow{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.halfTitle{ width:100%; justify-self:stretch; display:flex; }
+.halfBlock{ display:grid; gap:10px; }
+
+/* мобильная вертикаль: результаты друг под другом */
 @media (max-width:639px){
-
+  .results3{ grid-template-columns:1fr; }
   .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
 
-  /* 1) на портрете: заголовок, строка input + (растянутые кнопки), ниже delta */
-  .depGrid{
-    grid-template-columns: auto 1fr;           /* <-- важно: input слева "по факту", кнопкам даем остаток */
-    grid-template-areas:
-      "title title"
-      "inputs tz"
-      "delta delta";
-    align-items:center;
-  }
-  .depTitle{ width:100%; justify-self:stretch; }
-
-  /* Растягиваем tzGroup равномерно от input до правого края */
+  /* tzGroup растягиваем от input до правого края */
   .depTz.tzGroup{
     width:100%;
     justify-content:space-between;
@@ -242,66 +283,21 @@ button.pill{
   .depTz .tzBtn{
     flex:1;
     text-align:center;
-    padding:var(--titlePadV) 0;   /* чуть компактнее и ровно */
+    padding:var(--titlePadV) 0;
     font-size:var(--titleFs);
     border-radius:999px;
   }
 
-  /* кнопки прочие — по размеру как заголовок */
-  .modeBtn, .toggleBtn{
-    padding:var(--titlePadV) var(--titlePadH);
-    border-radius:999px;
-    font-size:var(--titleFs);
-  }
-
-  /* пары 3/7 и 4/5 */
-  .pairRow{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-  }
-  .halfTitle{ width:100%; justify-self:stretch; display:flex; }
-  .halfBlock{ display:grid; gap:10px; }
-
-  /* результаты друг под другом */
-  .results3{ grid-template-columns:1fr; }
+  /* полноширинные подложки в результатах */
   .resultCard .pill.fullPill{ width:100%; justify-self:stretch; }
 
-  /* немного уменьшить высоту "Продолжительность смены" */
+  /* чуть ниже блок "Продолжительность смены" */
   .resultCard.durationCard{
     padding:8px 10px;
-    grid-template-rows:34px auto; /* ещё чуть ниже */
+    grid-template-rows:34px auto;
   }
   .resultCard.durationCard .pill{ height:28px; }
   .resultCard.durationCard .timesTop{ padding-top:5px; }
-
-  /* 6) и LDT вертикально */
-  .sixRow{ grid-template-columns:1fr; }
-  .pill.fullPill{ width:100%; justify-self:stretch; }
-
-  /* 6) в одну линию: заголовок (2 строки) слева, input справа */
-  .sixInline{
-    display:grid;
-    grid-template-columns:1fr auto;
-    gap:10px;
-    align-items:stretch;
-  }
-  .fieldTitle.wrap2{
-    white-space:normal;
-    line-height:1.15;
-    height:42px;
-    border-radius:12px;
-    width:100%;
-  }
-  .sixInline input[type="time"]{
-    height:42px;
-    padding-top:0;
-    padding-bottom:0;
-  }
-}
-
-@media (max-width:360px){
-  input[type="time"], select.deltaSelect{ width:110px; }
 }
 
 /* ===== Пояснения (оверлей поверх страницы) ===== */
@@ -348,7 +344,7 @@ button.pill{
 <body>
 <div class="wrap">
 
-<div class="card">
+<div class="card headerCard">
   <h1>Расчет смены</h1>
 </div>
 
@@ -356,7 +352,7 @@ button.pill{
 
   <!-- 1) -->
   <div class="depGrid">
-    <span class="fieldTitle depTitle fullTitle">1) Время вылета по расписанию</span>
+    <span class="fieldTitle depTitle fullTitle">Время вылета по расписанию</span>
 
     <div class="depLine">
       <input id="depTime" type="time" value="05:00" step="60">
@@ -371,7 +367,7 @@ button.pill{
     <!-- Δ UTC — всегда видим -->
     <div id="deltaFold">
       <div class="deltaInner">
-        <button type="button" class="fieldTitle hasHint" onclick="openHint('delta')">Δ UTC?</button>
+        <button type="button" class="fieldTitle hasHint" onclick="openHint('delta')">Δ UTC</button>
         <select id="deltaUtc" class="deltaSelect">
           <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
           <option value="4">4</option><option value="5">5</option><option value="6">6</option>
@@ -384,10 +380,10 @@ button.pill{
 
   <!-- 2) -->
   <div style="margin-top:12px;">
-    <div class="fieldTitle fullTitle">2) Расчет для</div>
+    <div class="fieldTitle fullTitle">Расчет для</div>
     <div class="modeButtons" style="margin-top:10px;">
-      <button type="button" id="btnFlight" class="modeBtn active" onclick="setCrew('flight')">Flight Crew</button>
-      <button type="button" id="btnCabin" class="modeBtn" onclick="setCrew('cabin')">Cabin Crew</button>
+      <button type="button" id="btnFlight" class="modeBtn actionBtn active" onclick="setCrew('flight')">Flight Crew</button>
+      <button type="button" id="btnCabin" class="modeBtn actionBtn" onclick="setCrew('cabin')">Cabin Crew</button>
     </div>
   </div>
 
@@ -395,13 +391,13 @@ button.pill{
   <div id="ccBlock" style="margin-top:12px;">
     <div class="pairRow">
       <div class="halfBlock">
-        <div class="fieldTitle halfTitle">3) Аэропорт явки</div>
-        <button type="button" id="airportBtn" class="toggleBtn" onclick="toggleAirport()">UUEE</button>
+        <div class="fieldTitle halfTitle">Аэропорт явки</div>
+        <button type="button" id="airportBtn" class="toggleBtn actionBtn" onclick="toggleAirport()">UUEE</button>
       </div>
 
       <div class="halfBlock">
-        <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('reinforced')">7) Усиленный экипаж?</button>
-        <button type="button" id="reinforcedBtn" class="toggleBtn" onclick="toggleReinforced()">Нет</button>
+        <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('reinforced')">Усиленный экипаж</button>
+        <button type="button" id="reinforcedBtn" class="toggleBtn actionBtn" onclick="toggleReinforced()">Нет</button>
       </div>
     </div>
   </div>
@@ -410,13 +406,13 @@ button.pill{
   <div style="margin-top:12px;">
     <div class="pairRow">
       <div class="halfBlock">
-        <div class="fieldTitle halfTitle">4) Кол-во посадок</div>
-        <button type="button" id="landingsBtn" class="toggleBtn" onclick="toggleLandings()">1–2</button>
+        <div class="fieldTitle halfTitle">Кол-во посадок</div>
+        <button type="button" id="landingsBtn" class="toggleBtn actionBtn" onclick="toggleLandings()">1–2</button>
       </div>
 
       <div class="halfBlock">
-        <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('extend')">5) Продление КВС?</button>
-        <button type="button" id="extendBtn" class="toggleBtn" onclick="toggleExtend()">Нет</button>
+        <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('extend')">Продление КВС</button>
+        <button type="button" id="extendBtn" class="toggleBtn actionBtn" onclick="toggleExtend()">Нет</button>
       </div>
     </div>
   </div>
@@ -465,7 +461,7 @@ button.pill{
 
     <div>
       <div class="sixInline">
-        <div class="fieldTitle fullTitle wrap2">6) Время на<br>обратный полет</div>
+        <div class="fieldTitle fullTitle wrap2">Время на<br>обратный полет</div>
         <input id="flightTime" type="time" value="02:30" step="60">
       </div>
     </div>
