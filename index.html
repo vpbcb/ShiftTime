@@ -18,23 +18,19 @@
   --pillBg:#f0f2f7;
   --accent:#1976d2;
 
-  --titleFs:13.6px;      /* заголовки 1)2)3)... и Δ UTC? (уменьшено) */
+  --titleFs:13.6px;
   --titlePadV:6px;
   --titlePadH:10px;
-  --ctlFs:16px;          /* базовый шрифт контролов */
-  --timeFs:18.5px;       /* шрифт времени ввода */
-  --resultTimeFs:21px;   /* шрифт времени в результатах */
+  --ctlFs:16px;
+  --timeFs:18.5px;
+  --resultTimeFs:21px;
 }
 
 *{ font-family:Arial, sans-serif; box-sizing:border-box; }
 
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-}
-
+body{ margin:0; background:var(--bg); color:var(--ink); }
 .wrap{ max-width:720px; margin:auto; padding:14px; }
+
 .card{
   background:var(--card);
   border:1px solid var(--border);
@@ -43,13 +39,11 @@ body{
   margin-bottom:10px;
 }
 
-/* 5) Заголовок по центру */
 h1{ font-size:20px; margin:0; text-align:center; }
 
 .row{ display:grid; grid-template-columns:1fr; gap:10px; }
 @media (min-width:640px){ .row.two{ grid-template-columns:1fr 1fr; } }
 
-/* элементы ввода */
 input, button, select{
   padding:10px;
   border-radius:10px;
@@ -59,21 +53,18 @@ input, button, select{
   font-size:var(--ctlFs);
 }
 
-/* время */
 input[type="time"]{
   width:120px;
   font-size:var(--timeFs);
   text-align:center;
 }
-
-/* ΔUTC */
 select.deltaSelect{
   width:120px;
   font-size:var(--timeFs);
   text-align:center;
 }
 
-/* ПОДЛОЖКИ заголовков (1)2)3)... и Δ UTC? */
+/* Заголовки-подложки */
 .fieldTitle{
   display:inline-flex;
   align-items:center;
@@ -85,10 +76,10 @@ select.deltaSelect{
   border:1px solid var(--border);
   width:fit-content;
   font-weight:600;
-  white-space:nowrap; /* 2) без переноса, включая "Δ UTC?" */
+  white-space:nowrap;
 }
 
-/* ===== 1) Шапка (заголовок + МСК/UTC/Local) на одной линии ===== */
+/* 1) шапка */
 .headerRow{
   display:flex;
   align-items:center;
@@ -96,7 +87,6 @@ select.deltaSelect{
   gap:10px;
   flex-wrap:nowrap;
 }
-
 .tzGroup{ display:flex; gap:8px; flex-wrap:nowrap; }
 .tzBtn{
   font-weight:600;
@@ -104,13 +94,8 @@ select.deltaSelect{
   border-radius:999px;
   font-size:var(--ctlFs);
 }
-.tzBtn.active{
-  background:var(--accent);
-  color:#fff;
-  border-color:var(--accent);
-}
+.tzBtn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
 
-/* Δ UTC рядом с временем (в одной строке) */
 #deltaWrap{ display:none; }
 #deltaWrap.show{ display:flex; align-items:center; gap:8px; }
 
@@ -119,7 +104,6 @@ select.deltaSelect{
 .modeBtn{ flex:1; font-weight:600; }
 .modeBtn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
 
-/* переключатели */
 .toggleBtn{ font-weight:600; }
 
 /* анимация Cabin Crew */
@@ -130,46 +114,33 @@ select.deltaSelect{
   transform:translateY(-6px);
   transition:max-height 260ms ease, opacity 260ms ease, transform 260ms ease;
 }
-#ccBlock.open{ max-height:240px; opacity:1; transform:translateY(0); }
+#ccBlock.open{ max-height:260px; opacity:1; transform:translateY(0); }
 
 /* ===== РЕЗУЛЬТАТЫ ===== */
-.results3{
-  display:grid;
-  gap:12px;
-}
+.results3{ display:grid; gap:12px; }
 
-/* Десктоп: 3 в строку */
+/* десктоп */
 @media (min-width:640px){
   .results3{ grid-template-columns:1fr 1fr 1fr; }
 }
 
-/* Мобильный портрет: 1 сверху, 2 снизу (под ним) */
-@media (max-width:639px){
-  .results3{ grid-template-columns:1fr 1fr; }
-  .results3 .resultCard:first-child{
-    grid-column:1 / -1; /* Продолжительность смены — сверху */
-  }
-}
-
+/* карточка результата */
 .resultCard{
   border:1px solid var(--border);
   border-radius:12px;
   padding:10px;
   background:#fff;
   display:grid;
-  grid-template-rows:42px auto;  /* одинаковая высота шапки */
+  grid-template-rows:42px auto;
   text-align:center;
 }
 
-/* 3) Все времена в результатах на одной линии:
-   фиксируем одинаковый верхний отступ у времени/блока времени */
-.timesTop{ padding-top:8px; }
-
+/* pill по умолчанию */
 .pill{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  height:32px;                   /* одинаковая высота подложек */
+  height:32px;
   font-size:var(--titleFs);
   padding:0 10px;
   border-radius:999px;
@@ -181,11 +152,8 @@ select.deltaSelect{
   white-space:nowrap;
 }
 
-.out{
-  font-size:var(--resultTimeFs);
-  font-weight:700;
-  line-height:1.1;
-}
+.timesTop{ padding-top:8px; }
+.out{ font-size:var(--resultTimeFs); font-weight:700; line-height:1.1; }
 
 .multiTimes{
   display:grid;
@@ -197,15 +165,23 @@ select.deltaSelect{
 .mtTime{ font-size:var(--resultTimeFs); font-weight:700; line-height:1.1; }
 .mtLbl{ font-size:14px; color:var(--muted); }
 
-/* ===== 6) + LDT ===== */
+/* 6)+LDT */
 .sixRow{ display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start; }
-@media (max-width:639px){
-  /* 4) LDT под полем "Время на обратный полет" */
-  .sixRow{ grid-template-columns:1fr; }
-}
 
-/* ===== МОБИЛЬНАЯ ОПТИМИЗАЦИЯ ПОРТРЕТ ===== */
+/* ======= ТОЛЬКО ВЕРТИКАЛЬНАЯ ОРИЕНТАЦИЯ / МОБИЛЬНЫЙ ПОРТРЕТ ======= */
 @media (max-width:639px){
+
+  /* 8) Результаты друг под другом */
+  .results3{ grid-template-columns:1fr; }
+
+  /* 5) Подложки "Выключение..." и "Окончание..." на всю ширину блока */
+  .resultCard .pill.fullPill{
+    width:100%;
+    justify-self:stretch;
+  }
+
+  /* 5) / 4) текст по центру уже align-items/justify-content */
+
   /* 2) Кнопки по размеру как заголовок */
   .tzBtn, .modeBtn, .toggleBtn{
     padding:var(--titlePadV) var(--titlePadH);
@@ -213,15 +189,48 @@ select.deltaSelect{
     font-size:var(--titleFs);
   }
 
-  /* 3) Продолжительность смены — минимальная высота */
+  /* 6) Подложка 2) на всю ширину */
+  .fieldTitle.fullTitle{
+    width:100%;
+    justify-self:stretch;
+  }
+
+  /* 1) и 2) и пр. – шапки делаем компактнее */
   .resultCard{
     grid-template-rows:auto auto;
-    padding:10px;
   }
+
+  /* 1) и 2) в 3)7) и 4)5) — в один ряд */
+  .pairRow{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  /* 7) Подложки 3/4/5/7: каждая занимает свою половину, одинаковая */
+  .halfTitle{
+    width:100%;
+    justify-self:stretch;
+    display:flex;
+  }
+
+  /* 3/7/4/5: контейнеры выстраиваем красиво */
+  .halfBlock{
+    display:grid;
+    gap:10px;
+  }
+
+  /* 4) LDT подложка на всю ширину блока */
+  .pill.fullPill{
+    width:100%;
+    justify-self:stretch;
+  }
+
+  /* 4) LDT ниже поля 6) */
+  .sixRow{ grid-template-columns:1fr; }
 }
 
 @media (max-width:520px){
-  /* чтобы 1) красиво переносилось на очень узких */
   .headerRow{ flex-wrap:wrap; align-items:flex-start; }
   .tzGroup{ flex-wrap:wrap; }
 }
@@ -266,42 +275,38 @@ select.deltaSelect{
 
   <!-- 2) -->
   <div style="margin-top:12px;">
-    <div class="fieldTitle">2) Расчет для</div>
+    <div class="fieldTitle fullTitle">2) Расчет для</div>
     <div class="modeButtons" style="margin-top:10px;">
       <button type="button" id="btnFlight" class="modeBtn active" onclick="setCrew('flight')">Flight Crew</button>
       <button type="button" id="btnCabin" class="modeBtn" onclick="setCrew('cabin')">Cabin Crew</button>
     </div>
   </div>
 
-  <!-- 3) и 7) -->
-  <div id="ccBlock" class="row two" style="margin-top:12px;">
-    <div>
-      <div class="fieldTitle">3) Аэропорт явки</div>
-      <div style="margin-top:10px;">
+  <!-- 3) и 7) в один ряд на портрете -->
+  <div id="ccBlock" style="margin-top:12px;">
+    <div class="pairRow">
+      <div class="halfBlock">
+        <div class="fieldTitle halfTitle">3) Аэропорт явки</div>
         <button type="button" id="airportBtn" class="toggleBtn" onclick="toggleAirport()">UUEE</button>
       </div>
-    </div>
 
-    <div>
-      <div class="fieldTitle">7) Усиленный экипаж?</div>
-      <div style="margin-top:10px;">
+      <div class="halfBlock">
+        <div class="fieldTitle halfTitle">7) Усиленный экипаж?</div>
         <button type="button" id="reinforcedBtn" class="toggleBtn" onclick="toggleReinforced()">Нет</button>
       </div>
     </div>
   </div>
 
-  <!-- 4) и 5) -->
-  <div class="row two" style="margin-top:12px;">
-    <div>
-      <div class="fieldTitle">4) Кол-во посадок</div>
-      <div style="margin-top:10px;">
+  <!-- 4) и 5) в один ряд на портрете -->
+  <div style="margin-top:12px;">
+    <div class="pairRow">
+      <div class="halfBlock">
+        <div class="fieldTitle halfTitle">4) Кол-во посадок</div>
         <button type="button" id="landingsBtn" class="toggleBtn" onclick="toggleLandings()">1–2</button>
       </div>
-    </div>
 
-    <div>
-      <div class="fieldTitle">5) Продление КВС?</div>
-      <div style="margin-top:10px;">
+      <div class="halfBlock">
+        <div class="fieldTitle halfTitle">5) Продление КВС?</div>
         <button type="button" id="extendBtn" class="toggleBtn" onclick="toggleExtend()">Нет</button>
       </div>
     </div>
@@ -314,14 +319,14 @@ select.deltaSelect{
   <div class="results3">
 
     <div class="resultCard">
-      <div class="pill">Продолжительность смены</div>
+      <div class="pill fullPill">Продолжительность смены</div>
       <div class="timesTop" style="display:flex; justify-content:center;">
         <div class="out" id="outDuration">—</div>
       </div>
     </div>
 
     <div class="resultCard">
-      <div class="pill">Выключение двигателей</div>
+      <div class="pill fullPill">Выключение двигателей</div>
       <div class="timesTop">
         <div class="multiTimes">
           <div class="mtCol"><div class="mtTime" id="outEngMSK">—</div><div class="mtLbl">МСК</div></div>
@@ -332,7 +337,7 @@ select.deltaSelect{
     </div>
 
     <div class="resultCard">
-      <div class="pill">Окончание смены</div>
+      <div class="pill fullPill">Окончание смены</div>
       <div class="timesTop">
         <div class="multiTimes">
           <div class="mtCol"><div class="mtTime" id="outEndMSK">—</div><div class="mtLbl">МСК</div></div>
@@ -350,14 +355,14 @@ select.deltaSelect{
   <div class="sixRow">
 
     <div>
-      <div class="fieldTitle">6) Время на обратный полет</div>
+      <div class="fieldTitle fullTitle">6) Время на обратный полет</div>
       <div style="margin-top:10px;">
         <input id="flightTime" type="time" value="02:30" step="60">
       </div>
     </div>
 
     <div>
-      <div class="pill">LDT</div>
+      <div class="pill fullPill">LDT</div>
       <div class="timesTop">
         <div class="multiTimes">
           <div class="mtCol"><div class="mtTime" id="outLdtMSK">—</div><div class="mtLbl">МСК</div></div>
@@ -413,7 +418,7 @@ function toggleExtend(){ extend=extend==="нет"?"да":"нет"; extendBtn.tex
 function parseTime(t){ if(!t) return null; const [a,b]=t.split(":").map(Number); return a*60+b; }
 function fmt(m){ m=(m+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
 
-/* Конвертация (как раньше в вашей версии):
+/* Конвертация:
    База расчетов — МСК.
    MSK = UTC + 3
    Local = UTC + Δ (Δ 1..12)
@@ -490,7 +495,6 @@ function render(){
 /* моментальный пересчет */
 let lastDep=depTime.value, lastFlt=flightTime.value;
 let lastTz=tzMode, lastDelta=(deltaUtc?deltaUtc.value:"3");
-
 setInterval(()=>{
   const d = (window.deltaUtc ? deltaUtc.value : "3");
   if(depTime.value!==lastDep || flightTime.value!==lastFlt || tzMode!==lastTz || d!==lastDelta){
@@ -501,7 +505,7 @@ setInterval(()=>{
 
 /* старт */
 ccBlock.classList.remove("open");
-setTzMode("MSK");  // по умолчанию МСК, Δ скрыт
+setTzMode("MSK");
 render();
 </script>
 </body>
