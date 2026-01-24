@@ -27,8 +27,10 @@
 
   --hintFs:12.5px;
 
-  /* единая высота для кнопок (Flight/Cabin, Airport, Reinforced, Landings, Extend) */
+  /* единая высота для "больших" кнопок (оставляем для тех, где нужна высота из-за значка ?) */
   --actionBtnH:46px;
+  /* Меньшая высота для перечисленных пользователем кнопок */
+  --actionBtnHSmall:38px;
 }
 
 *{ font-family:Arial, sans-serif; box-sizing:border-box; }
@@ -101,7 +103,7 @@ button.fieldTitle{
   line-height:1.1;
 }
 
-/* значок ? в кружке — НЕ перекрывает текст (справа снаружи, вверху) */
+/* значок ? в кружке — не перекрывает текст (снаружи) */
 .hasHint{ position:relative; }
 .hasHint::after{
   content:"?";
@@ -158,9 +160,19 @@ button.fieldTitle{
 
 .toggleBtn{ font-weight:600; }
 
-/* единые размеры/высоты для всех "основных" кнопок */
+/* "большая" кнопка (с запасом под значок ?) */
 .actionBtn{
   height:var(--actionBtnH);
+  padding-top:0;
+  padding-bottom:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* "малая" высота — как было раньше */
+.actionBtnSmall{
+  height:var(--actionBtnHSmall);
   padding-top:0;
   padding-bottom:0;
   display:flex;
@@ -216,7 +228,6 @@ button.fieldTitle{
   white-space:nowrap;
 }
 
-/* если pill сделан кнопкой */
 button.pill{
   padding:0 10px;
   background:var(--pillBg);
@@ -253,6 +264,8 @@ button.pill{
   height:42px;
   border-radius:12px;
   width:100%;
+  justify-content:center;   /* последний штрих: по центру */
+  text-align:center;        /* на всякий случай */
 }
 .sixInline input[type="time"]{
   height:42px;
@@ -298,6 +311,14 @@ button.pill{
   }
   .resultCard.durationCard .pill{ height:28px; }
   .resultCard.durationCard .timesTop{ padding-top:5px; }
+
+  /* LDT pill на всю ширину как у результатов (в т.ч. как "Окончание смены") */
+  #ldtPill{
+    width:100%;
+    justify-self:stretch;
+    display:flex;
+    justify-content:center;
+  }
 }
 
 /* ===== Пояснения (оверлей поверх страницы) ===== */
@@ -378,41 +399,46 @@ button.pill{
     </div>
   </div>
 
-  <!-- 2) -->
+  <!-- Расчет для -->
   <div style="margin-top:12px;">
     <div class="fieldTitle fullTitle">Расчет для</div>
     <div class="modeButtons" style="margin-top:10px;">
-      <button type="button" id="btnFlight" class="modeBtn actionBtn active" onclick="setCrew('flight')">Flight Crew</button>
-      <button type="button" id="btnCabin" class="modeBtn actionBtn" onclick="setCrew('cabin')">Cabin Crew</button>
+      <!-- эти 2 кнопки должны быть меньшей высоты -->
+      <button type="button" id="btnFlight" class="modeBtn actionBtnSmall active" onclick="setCrew('flight')">Flight Crew</button>
+      <button type="button" id="btnCabin" class="modeBtn actionBtnSmall" onclick="setCrew('cabin')">Cabin Crew</button>
     </div>
   </div>
 
-  <!-- 3) и 7) -->
+  <!-- Аэропорт/Усиленный -->
   <div id="ccBlock" style="margin-top:12px;">
     <div class="pairRow">
       <div class="halfBlock">
         <div class="fieldTitle halfTitle">Аэропорт явки</div>
-        <button type="button" id="airportBtn" class="toggleBtn actionBtn" onclick="toggleAirport()">UUEE</button>
+        <!-- UUEE меньшей высоты -->
+        <button type="button" id="airportBtn" class="toggleBtn actionBtnSmall" onclick="toggleAirport()">UUEE</button>
       </div>
 
       <div class="halfBlock">
         <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('reinforced')">Усиленный экипаж</button>
-        <button type="button" id="reinforcedBtn" class="toggleBtn actionBtn" onclick="toggleReinforced()">Нет</button>
+        <!-- Нет (усиленный) меньшей высоты -->
+        <button type="button" id="reinforcedBtn" class="toggleBtn actionBtnSmall" onclick="toggleReinforced()">Нет</button>
       </div>
     </div>
   </div>
 
-  <!-- 4) и 5) -->
+  <!-- Посадки/Продление -->
   <div style="margin-top:12px;">
     <div class="pairRow">
       <div class="halfBlock">
         <div class="fieldTitle halfTitle">Кол-во посадок</div>
-        <button type="button" id="landingsBtn" class="toggleBtn actionBtn" onclick="toggleLandings()">1–2</button>
+        <!-- 1–2 меньшей высоты -->
+        <button type="button" id="landingsBtn" class="toggleBtn actionBtnSmall" onclick="toggleLandings()">1–2</button>
       </div>
 
       <div class="halfBlock">
         <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('extend')">Продление КВС</button>
-        <button type="button" id="extendBtn" class="toggleBtn actionBtn" onclick="toggleExtend()">Нет</button>
+        <!-- Нет (продление) меньшей высоты -->
+        <button type="button" id="extendBtn" class="toggleBtn actionBtnSmall" onclick="toggleExtend()">Нет</button>
       </div>
     </div>
   </div>
@@ -467,7 +493,9 @@ button.pill{
     </div>
 
     <div>
-      <div class="pill fullPill">LDT</div>
+      <!-- LDT по ширине как "Окончание смены" и по центру -->
+      <div class="pill fullPill" id="ldtPill">LDT</div>
+
       <div class="timesTop">
         <div class="multiTimes">
           <div class="mtCol"><div class="mtTime" id="outLdtMSK">—</div><div class="mtLbl">МСК</div></div>
