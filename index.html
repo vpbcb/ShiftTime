@@ -24,6 +24,8 @@
   --ctlFs:16px;
   --timeFs:18.5px;
   --resultTimeFs:21px;
+
+  --hintFs:12.5px;
 }
 
 *{ font-family:Arial, sans-serif; box-sizing:border-box; }
@@ -106,28 +108,14 @@ select.deltaSelect{
 }
 .tzBtn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
 
-/* Блок Δ UTC (ВСЕГДА ВИДИМЫЙ) */
-.deltaBlock{
-  grid-area:delta;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-.deltaInner{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:nowrap;
-}
-
-/* режим Flight/Cabin */
+/* Режим Flight/Cabin */
 .modeButtons{ display:flex; gap:10px; }
 .modeBtn{ flex:1; font-weight:600; }
 .modeBtn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
 
 .toggleBtn{ font-weight:600; }
 
-/* анимация Cabin Crew */
+/* Анимация Cabin Crew */
 #ccBlock{
   overflow:hidden;
   max-height:0;
@@ -136,30 +124,6 @@ select.deltaSelect{
   transition:max-height 260ms ease, opacity 260ms ease, transform 260ms ease;
 }
 #ccBlock.open{ max-height:260px; opacity:1; transform:translateY(0); }
-
-/* ===== Пояснения (раскрывающиеся) ===== */
-.helpWrap{
-  overflow:hidden;
-  max-height:0;
-  opacity:0;
-  transform:translateY(-4px);
-  transition:max-height 220ms ease, opacity 220ms ease, transform 220ms ease;
-}
-.helpWrap.open{
-  max-height:120px;
-  opacity:1;
-  transform:translateY(0);
-}
-.helpText{
-  margin:0;
-  padding:6px 10px;
-  border-radius:10px;
-  border:1px dashed var(--border);
-  background:#fafbfe;
-  color:#2d3441;
-  font-size:12.5px;   /* более мелкий шрифт */
-  line-height:1.25;
-}
 
 /* ===== РЕЗУЛЬТАТЫ ===== */
 .results3{ display:grid; gap:12px; }
@@ -210,10 +174,9 @@ select.deltaSelect{
 /* ======= ТОЛЬКО ВЕРТИКАЛЬНАЯ ОРИЕНТАЦИЯ / МОБИЛЬНЫЙ ПОРТРЕТ ======= */
 @media (max-width:639px){
 
-  /* 1) Подложки 1) и 2) на всю ширину */
   .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
 
-  /* 1) На портрете: заголовок full, потом строка input + tz, потом delta ниже */
+  /* 1) на портрете: заголовок, строка input+tz, ниже delta (ВСЕГДА ВИДИМЫЙ) */
   .depGrid{
     grid-template-columns: 1fr auto;
     grid-template-areas:
@@ -243,11 +206,9 @@ select.deltaSelect{
 
   /* результаты друг под другом */
   .results3{ grid-template-columns:1fr; }
-
-  /* полноширинные подложки в результатах */
   .resultCard .pill.fullPill{ width:100%; justify-self:stretch; }
 
-  /* чуть ниже высота блока "Продолжительность смены" */
+  /* немного уменьшить высоту "Продолжительность смены" */
   .resultCard.durationCard{
     padding:8px 10px;
     grid-template-rows:36px auto;
@@ -283,6 +244,45 @@ select.deltaSelect{
 @media (max-width:360px){
   input[type="time"], select.deltaSelect{ width:110px; }
 }
+
+/* ===== Пояснения (оверлей поверх страницы) ===== */
+.hintOverlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(0,0,0,0.35);
+  z-index:9999;
+}
+.hintOverlay.open{ display:flex; }
+
+.hintBox{
+  width:min(520px, 100%);
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px 14px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+  cursor:pointer; /* нажал — закрыл */
+}
+.hintTitle{
+  font-weight:700;
+  margin:0 0 8px 0;
+  font-size:14px;
+}
+.hintText{
+  margin:0;
+  font-size:var(--hintFs);
+  color:#222;
+  line-height:1.35;
+}
+.hintNote{
+  margin-top:10px;
+  font-size:11.5px;
+  color:var(--muted);
+}
 </style>
 </head>
 
@@ -309,19 +309,17 @@ select.deltaSelect{
       <input id="depTime" type="time" value="05:00" step="60">
     </div>
 
-    <!-- Δ UTC: ВСЕГДА ОТОБРАЖАЕТСЯ, не зависит от Local -->
-    <div class="deltaBlock">
-      <button type="button" id="deltaInfoBtn" class="fieldTitle" onclick="toggleHelp('helpDelta')">Δ UTC?</button>
+    <!-- 1) Δ UTC — ВСЕГДА ВИДИМЫЙ (НЕ зависит от Local) -->
+    <div id="deltaFold">
       <div class="deltaInner">
+        <!-- кликаем по подложке Δ UTC? чтобы открыть подсказку -->
+        <button type="button" class="fieldTitle" onclick="openHint('delta')">Δ UTC?</button>
         <select id="deltaUtc" class="deltaSelect">
           <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
           <option value="4">4</option><option value="5">5</option><option value="6">6</option>
           <option value="7">7</option><option value="8">8</option><option value="9">9</option>
           <option value="10">10</option><option value="11">11</option><option value="12">12</option>
         </select>
-      </div>
-      <div id="helpDelta" class="helpWrap">
-        <p class="helpText">Часовой пояс относительно UTC для расчетов, с учетом местного времени.</p>
       </div>
     </div>
   </div>
@@ -344,11 +342,9 @@ select.deltaSelect{
       </div>
 
       <div class="halfBlock">
-        <button type="button" id="reinforcedInfoBtn" class="fieldTitle halfTitle" onclick="toggleHelp('helpReinforced')">7) Усиленный экипаж?</button>
+        <!-- кликаем по подложке "Усиленный экипаж?" чтобы подсказка -->
+        <button type="button" class="fieldTitle halfTitle" onclick="openHint('reinforced')">7) Усиленный экипаж?</button>
         <button type="button" id="reinforcedBtn" class="toggleBtn" onclick="toggleReinforced()">Нет</button>
-        <div id="helpReinforced" class="helpWrap">
-          <p class="helpText">5 ЧКЭ для A320 / 6 ЧКЭ для A321 (стажер не учитывается).</p>
-        </div>
       </div>
     </div>
   </div>
@@ -362,11 +358,9 @@ select.deltaSelect{
       </div>
 
       <div class="halfBlock">
-        <button type="button" id="extendInfoBtn" class="fieldTitle halfTitle" onclick="toggleHelp('helpExtend')">5) Продление КВС?</button>
+        <!-- подсказка по "Продление КВС?" -->
+        <button type="button" class="fieldTitle halfTitle" onclick="openHint('extend')">5) Продление КВС?</button>
         <button type="button" id="extendBtn" class="toggleBtn" onclick="toggleExtend()">Нет</button>
-        <div id="helpExtend" class="helpWrap">
-          <p class="helpText">+2 часа / +3 часа (для усиленного экипажа).</p>
-        </div>
       </div>
     </div>
   </div>
@@ -378,12 +372,10 @@ select.deltaSelect{
   <div class="results3">
 
     <div class="resultCard durationCard">
-      <button type="button" id="durationInfoBtn" class="pill fullPill" onclick="toggleHelp('helpDuration')">Продолжительность смены</button>
+      <!-- подсказка по "Продолжительность смены" -->
+      <button type="button" class="pill fullPill" onclick="openHint('duration')">Продолжительность смены</button>
       <div class="timesTop" style="display:flex; justify-content:center;">
         <div class="out" id="outDuration">—</div>
-      </div>
-      <div id="helpDuration" class="helpWrap" style="text-align:left;">
-        <p class="helpText">06:01-21:59 МСК — дневная явка / 22:00-06:00 МСК — ночная явка.</p>
       </div>
     </div>
 
@@ -439,15 +431,18 @@ select.deltaSelect{
 
 </div>
 
+<!-- Оверлей подсказок -->
+<div id="hintOverlay" class="hintOverlay" onclick="closeHint()">
+  <div class="hintBox" onclick="closeHint()">
+    <p class="hintTitle" id="hintTitle">Пояснение</p>
+    <p class="hintText" id="hintText">—</p>
+    <div class="hintNote">Нажмите на окно, чтобы закрыть.</div>
+  </div>
+</div>
+
 <script>
 let cabincrew="нет", airport="UUEE", reinforced="нет", landings="1-2", extend="нет";
 let tzMode = "MSK"; // MSK | UTC | LOCAL
-
-function toggleHelp(id){
-  const el = document.getElementById(id);
-  if(!el) return;
-  el.classList.toggle("open");
-}
 
 function setTzMode(mode){
   tzMode = mode;
@@ -566,8 +561,48 @@ setInterval(()=>{
   }
 },150);
 
+/* ===== Подсказки ===== */
+const hintOverlay = document.getElementById("hintOverlay");
+const hintTitleEl = document.getElementById("hintTitle");
+const hintTextEl = document.getElementById("hintText");
+
+const HINTS = {
+  delta: {
+    title: "Δ UTC",
+    text: "Часовой пояс относительно UTC для расчетов, с учетом местного времени."
+  },
+  extend: {
+    title: "Продление КВС",
+    text: "+2 часа / +3 часа (для усиленного экипажа)."
+  },
+  duration: {
+    title: "Продолжительность смены",
+    text: "06:01–21:59 МСК — дневная явка / 22:00–06:00 МСК — ночная явка."
+  },
+  reinforced: {
+    title: "Усиленный экипаж",
+    text: "5 ЧКЭ для A320 / 6 ЧКЭ для A321 (стажер не учитывается)."
+  }
+};
+
+function openHint(key){
+  const h = HINTS[key];
+  if(!h) return;
+  hintTitleEl.textContent = h.title;
+  hintTextEl.textContent = h.text;
+  hintOverlay.classList.add("open");
+}
+function closeHint(){
+  hintOverlay.classList.remove("open");
+}
+
 /* старт */
 ccBlock.classList.remove("open");
+/* Δ UTC всегда видим: просто оставляем блок открытым */
+document.getElementById("deltaFold").style.maxHeight = "none";
+document.getElementById("deltaFold").style.opacity = "1";
+document.getElementById("deltaFold").style.transform = "none";
+
 setTzMode("MSK");
 render();
 </script>
