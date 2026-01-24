@@ -31,7 +31,7 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
 .wrap{ max-width:720px; margin:auto; padding:14px; }
 
 .card{
-  background:var(--card);
+  background:#fff;
   border:1px solid var(--border);
   border-radius:12px;
   padding:12px;
@@ -64,7 +64,7 @@ select.deltaSelect{
 .fieldTitle{
   display:inline-flex;
   align-items:center;
-  justify-content:center;
+  justify-content:center;    /* 1) центрируем надпись */
   font-size:var(--titleFs);
   padding:var(--titlePadV) var(--titlePadH);
   border-radius:999px;
@@ -75,21 +75,30 @@ select.deltaSelect{
   white-space:nowrap;
 }
 
-/* ===== 1) блок: ДЕСКТОП (кнопки рядом с заголовком) ===== */
+/* 1) блок вылета: общий (десктоп) */
 .depGrid{
   display:grid;
   grid-template-columns: 1fr auto;
   grid-template-areas:
     "title tz"
-    "inputs inputs";
+    "inputs inputs"
+    "delta delta";
   gap:8px 10px;
   align-items:center;
 }
 .depTitle{ grid-area:title; }
 .depTz{ grid-area:tz; justify-self:end; }
-.depInputs{ grid-area:inputs; display:flex; align-items:center; gap:10px; flex-wrap:nowrap; }
 
-/* Кнопки МСК/UTC/Local */
+/* строка: input вылета слева, tz справа (на мобиле) */
+.depLine{
+  grid-area:inputs;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:nowrap;
+}
+
+/* кнопки МСК/UTC/Local */
 .tzGroup{ display:flex; gap:8px; flex-wrap:nowrap; }
 .tzBtn{
   font-weight:600;
@@ -98,9 +107,6 @@ select.deltaSelect{
   font-size:var(--ctlFs);
 }
 .tzBtn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
-
-#deltaWrap{ display:none; }
-#deltaWrap.show{ display:flex; align-items:center; gap:8px; }
 
 /* режим Flight/Cabin */
 .modeButtons{ display:flex; gap:10px; }
@@ -118,6 +124,27 @@ select.deltaSelect{
   transition:max-height 260ms ease, opacity 260ms ease, transform 260ms ease;
 }
 #ccBlock.open{ max-height:260px; opacity:1; transform:translateY(0); }
+
+/* ===== DELTA раскрытие (как Cabin Crew) ===== */
+#deltaFold{
+  grid-area:delta;
+  overflow:hidden;
+  max-height:0;
+  opacity:0;
+  transform:translateY(-6px);
+  transition:max-height 260ms ease, opacity 260ms ease, transform 260ms ease;
+}
+#deltaFold.open{
+  max-height:90px;
+  opacity:1;
+  transform:translateY(0);
+}
+.deltaInner{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding-top:6px;
+}
 
 /* ===== РЕЗУЛЬТАТЫ ===== */
 .results3{ display:grid; gap:12px; }
@@ -168,20 +195,30 @@ select.deltaSelect{
 /* ======= ТОЛЬКО ВЕРТИКАЛЬНАЯ ОРИЕНТАЦИЯ / МОБИЛЬНЫЙ ПОРТРЕТ ======= */
 @media (max-width:639px){
 
-  /* результаты друг под другом */
-  .results3{ grid-template-columns:1fr; }
+  /* 1) Подложка 1) на всю ширину как у 2) */
+  .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
 
-  /* полноширинные подложки в результатах */
-  .resultCard .pill.fullPill{ width:100%; justify-self:stretch; }
+  /* 1) Перестраиваем 1): заголовок full, далее строка input+tz, далее delta ниже */
+  .depGrid{
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "title title"
+      "inputs tz"
+      "delta delta";
+    align-items:center;
+  }
+  .depTitle{ width:100%; justify-self:stretch; } /* 1) full ширина */
+  .depLine{ justify-self:start; }
+  .depTz{ align-self:center; }
 
-  /* кнопки по размеру как заголовок */
+  /* 2) Кнопки по размеру как заголовок */
   .tzBtn, .modeBtn, .toggleBtn{
     padding:var(--titlePadV) var(--titlePadH);
     border-radius:999px;
     font-size:var(--titleFs);
   }
 
-  /* подложка 2) на всю ширину */
+  /* 6) Подложка 2) на всю ширину */
   .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
 
   /* пары 3/7 и 4/5 */
@@ -193,25 +230,27 @@ select.deltaSelect{
   .halfTitle{ width:100%; justify-self:stretch; display:flex; }
   .halfBlock{ display:grid; gap:10px; }
 
+  /* результаты друг под другом */
+  .results3{ grid-template-columns:1fr; }
+
+  /* полноширинные подложки в результатах */
+  .resultCard .pill.fullPill{ width:100%; justify-self:stretch; }
+
+  /* 3) уменьшить высоту блока "Продолжительность смены" */
+  .resultCard.durationCard{
+    padding:8px 10px;             /* меньше вертикальные отступы */
+    grid-template-rows:36px auto; /* меньше высота шапки */
+  }
+  .resultCard.durationCard .pill{
+    height:28px;                  /* чуть ниже pill только в этом блоке */
+  }
+  .resultCard.durationCard .timesTop{
+    padding-top:6px;
+  }
+
   /* 6) и LDT вертикально */
   .sixRow{ grid-template-columns:1fr; }
   .pill.fullPill{ width:100%; justify-self:stretch; }
-
-  /* ВАЖНОЕ ИЗМЕНЕНИЕ 1):
-     На портрете кнопки МСК/UTC/Local — справа на одном уровне с INPUT вылета */
-  .depGrid{
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "title title"
-      "inputs tz";
-    align-items:center;
-  }
-  .depInputs{ justify-self:start; }
-  .depTz{ align-self:center; }
-
-  /* чтобы в строку помещалось: input + delta + (возможно) */
-  .depInputs{ flex-wrap:nowrap; }
-  #deltaWrap.show{ flex-wrap:nowrap; }
 
   /* 6) в одну линию: заголовок (2 строки) слева, input справа */
   .sixInline{
@@ -251,18 +290,24 @@ select.deltaSelect{
 
   <!-- 1) -->
   <div class="depGrid">
-    <span class="fieldTitle depTitle">1) Время вылета по расписанию</span>
+    <!-- 1) fullTitle на мобиле, как у 2) -->
+    <span class="fieldTitle depTitle fullTitle">1) Время вылета по расписанию</span>
 
+    <!-- tz на мобиле стоит справа от input (за счет grid areas) -->
     <div class="tzGroup depTz" aria-label="Часовой пояс">
       <button type="button" id="btnMSK" class="tzBtn active" onclick="setTzMode('MSK')">МСК</button>
       <button type="button" id="btnUTC" class="tzBtn" onclick="setTzMode('UTC')">UTC</button>
       <button type="button" id="btnLOCAL" class="tzBtn" onclick="setTzMode('LOCAL')">Local</button>
     </div>
 
-    <div class="depInputs">
+    <!-- input вылета -->
+    <div class="depLine">
       <input id="depTime" type="time" value="05:00" step="60">
+    </div>
 
-      <div id="deltaWrap">
+    <!-- Δ UTC раскрывается НИЖЕ input -->
+    <div id="deltaFold">
+      <div class="deltaInner">
         <span class="fieldTitle">Δ UTC?</span>
         <select id="deltaUtc" class="deltaSelect">
           <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
@@ -319,7 +364,7 @@ select.deltaSelect{
 <div class="card">
   <div class="results3">
 
-    <div class="resultCard">
+    <div class="resultCard durationCard">
       <div class="pill fullPill">Продолжительность смены</div>
       <div class="timesTop" style="display:flex; justify-content:center;">
         <div class="out" id="outDuration">—</div>
@@ -356,7 +401,6 @@ select.deltaSelect{
   <div class="sixRow">
 
     <div>
-      <!-- На мобильном портрете: заголовок (2 строки) слева, input справа в одной линии -->
       <div class="sixInline">
         <div class="fieldTitle fullTitle wrap2">6) Время на<br>обратный полет</div>
         <input id="flightTime" type="time" value="02:30" step="60">
@@ -390,8 +434,9 @@ function setTzMode(mode){
   btnUTC.classList.toggle("active", tzMode==="UTC");
   btnLOCAL.classList.toggle("active", tzMode==="LOCAL");
 
-  if(tzMode==="LOCAL") deltaWrap.classList.add("show");
-  else deltaWrap.classList.remove("show");
+  // 2) Δ UTC раскрывается под временем вылета с анимацией
+  if(tzMode==="LOCAL") deltaFold.classList.add("open");
+  else deltaFold.classList.remove("open");
 
   render();
 }
@@ -507,7 +552,7 @@ setInterval(()=>{
 
 /* старт */
 ccBlock.classList.remove("open");
-setTzMode("MSK");
+setTzMode("MSK");   // это же закроет deltaFold
 render();
 </script>
 </body>
