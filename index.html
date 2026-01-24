@@ -27,7 +27,6 @@
 }
 
 *{ font-family:Arial, sans-serif; box-sizing:border-box; }
-
 body{ margin:0; background:var(--bg); color:var(--ink); }
 .wrap{ max-width:720px; margin:auto; padding:14px; }
 
@@ -40,9 +39,6 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
 }
 
 h1{ font-size:20px; margin:0; text-align:center; }
-
-.row{ display:grid; grid-template-columns:1fr; gap:10px; }
-@media (min-width:640px){ .row.two{ grid-template-columns:1fr 1fr; } }
 
 input, button, select{
   padding:10px;
@@ -76,17 +72,24 @@ select.deltaSelect{
   border:1px solid var(--border);
   width:fit-content;
   font-weight:600;
-  white-space:nowrap; /* по умолчанию без переноса */
+  white-space:nowrap;
 }
 
-/* 1) шапка (десктоп поведение) */
-.headerRow{
-  display:flex;
+/* ===== 1) блок: ДЕСКТОП (кнопки рядом с заголовком) ===== */
+.depGrid{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "title tz"
+    "inputs inputs";
+  gap:8px 10px;
   align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:nowrap;
 }
+.depTitle{ grid-area:title; }
+.depTz{ grid-area:tz; justify-self:end; }
+.depInputs{ grid-area:inputs; display:flex; align-items:center; gap:10px; flex-wrap:nowrap; }
+
+/* Кнопки МСК/UTC/Local */
 .tzGroup{ display:flex; gap:8px; flex-wrap:nowrap; }
 .tzBtn{
   font-weight:600;
@@ -99,12 +102,14 @@ select.deltaSelect{
 #deltaWrap{ display:none; }
 #deltaWrap.show{ display:flex; align-items:center; gap:8px; }
 
+/* режим Flight/Cabin */
 .modeButtons{ display:flex; gap:10px; }
 .modeBtn{ flex:1; font-weight:600; }
 .modeBtn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
 
 .toggleBtn{ font-weight:600; }
 
+/* анимация Cabin Crew */
 #ccBlock{
   overflow:hidden;
   max-height:0;
@@ -116,9 +121,8 @@ select.deltaSelect{
 
 /* ===== РЕЗУЛЬТАТЫ ===== */
 .results3{ display:grid; gap:12px; }
-@media (min-width:640px){
-  .results3{ grid-template-columns:1fr 1fr 1fr; }
-}
+@media (min-width:640px){ .results3{ grid-template-columns:1fr 1fr 1fr; } }
+
 .resultCard{
   border:1px solid var(--border);
   border-radius:12px;
@@ -128,6 +132,7 @@ select.deltaSelect{
   grid-template-rows:42px auto;
   text-align:center;
 }
+
 .pill{
   display:inline-flex;
   align-items:center;
@@ -143,6 +148,7 @@ select.deltaSelect{
   font-weight:600;
   white-space:nowrap;
 }
+
 .timesTop{ padding-top:8px; }
 .out{ font-size:var(--resultTimeFs); font-weight:700; line-height:1.1; }
 
@@ -166,10 +172,7 @@ select.deltaSelect{
   .results3{ grid-template-columns:1fr; }
 
   /* полноширинные подложки в результатах */
-  .resultCard .pill.fullPill{
-    width:100%;
-    justify-self:stretch;
-  }
+  .resultCard .pill.fullPill{ width:100%; justify-self:stretch; }
 
   /* кнопки по размеру как заголовок */
   .tzBtn, .modeBtn, .toggleBtn{
@@ -179,10 +182,7 @@ select.deltaSelect{
   }
 
   /* подложка 2) на всю ширину */
-  .fieldTitle.fullTitle{
-    width:100%;
-    justify-self:stretch;
-  }
+  .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
 
   /* пары 3/7 и 4/5 */
   .pairRow{
@@ -190,61 +190,50 @@ select.deltaSelect{
     grid-template-columns:1fr 1fr;
     gap:10px;
   }
-  .halfTitle{
-    width:100%;
-    justify-self:stretch;
-    display:flex;
-  }
-  .halfBlock{
-    display:grid;
-    gap:10px;
-  }
+  .halfTitle{ width:100%; justify-self:stretch; display:flex; }
+  .halfBlock{ display:grid; gap:10px; }
 
   /* 6) и LDT вертикально */
   .sixRow{ grid-template-columns:1fr; }
+  .pill.fullPill{ width:100%; justify-self:stretch; }
 
-  /* LDT pill на всю ширину */
-  .pill.fullPill{
-    width:100%;
-    justify-self:stretch;
-  }
-
-  /* ===== НОВОЕ: 1) Ввод времени + кнопки МСК/UTC/Local в ОДНОЙ СТРОКЕ ===== */
-  .depLine{
-    display:grid;
-    grid-template-columns:auto 1fr;
-    gap:10px;
+  /* ВАЖНОЕ ИЗМЕНЕНИЕ 1):
+     На портрете кнопки МСК/UTC/Local — справа на одном уровне с INPUT вылета */
+  .depGrid{
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "title title"
+      "inputs tz";
     align-items:center;
   }
-  .depLine .tzGroup{
-    justify-content:flex-end;
-    flex-wrap:nowrap;
-  }
-  /* на телефоне переносы в заголовке 1) не нужны */
-  .fieldTitle.noWrap{ white-space:nowrap; }
+  .depInputs{ justify-self:start; }
+  .depTz{ align-self:center; }
 
-  /* ===== НОВОЕ: 6) Заголовок (в 2 строки) + поле времени в ОДНОЙ СТРОКЕ ===== */
+  /* чтобы в строку помещалось: input + delta + (возможно) */
+  .depInputs{ flex-wrap:nowrap; }
+  #deltaWrap.show{ flex-wrap:nowrap; }
+
+  /* 6) в одну линию: заголовок (2 строки) слева, input справа */
   .sixInline{
     display:grid;
     grid-template-columns:1fr auto;
     gap:10px;
-    align-items:stretch; /* чтобы высоты совпадали */
+    align-items:stretch;
   }
   .fieldTitle.wrap2{
-    white-space:normal;        /* разрешаем перенос */
-    text-align:center;
+    white-space:normal;
     line-height:1.15;
-    height:42px;               /* по высоте как input (примерно) */
-    border-radius:12px;        /* чуть более "карточно", чтобы красиво в 2 строки */
+    height:42px;           /* высота как у input */
+    border-radius:12px;
+    width:100%;
   }
   .sixInline input[type="time"]{
-    height:42px;               /* равная высота с подложкой */
+    height:42px;
     padding-top:0;
     padding-bottom:0;
   }
 }
 
-/* защитный на очень узких */
 @media (max-width:360px){
   input[type="time"], select.deltaSelect{ width:110px; }
 }
@@ -261,26 +250,17 @@ select.deltaSelect{
 <div class="card">
 
   <!-- 1) -->
-  <div style="display:grid; gap:8px;">
-    <div class="headerRow">
-      <span class="fieldTitle noWrap">1) Время вылета по расписанию</span>
+  <div class="depGrid">
+    <span class="fieldTitle depTitle">1) Время вылета по расписанию</span>
 
-      <div class="tzGroup" aria-label="Часовой пояс">
-        <button type="button" id="btnMSK" class="tzBtn active" onclick="setTzMode('MSK')">МСК</button>
-        <button type="button" id="btnUTC" class="tzBtn" onclick="setTzMode('UTC')">UTC</button>
-        <button type="button" id="btnLOCAL" class="tzBtn" onclick="setTzMode('LOCAL')">Local</button>
-      </div>
+    <div class="tzGroup depTz" aria-label="Часовой пояс">
+      <button type="button" id="btnMSK" class="tzBtn active" onclick="setTzMode('MSK')">МСК</button>
+      <button type="button" id="btnUTC" class="tzBtn" onclick="setTzMode('UTC')">UTC</button>
+      <button type="button" id="btnLOCAL" class="tzBtn" onclick="setTzMode('LOCAL')">Local</button>
     </div>
 
-    <!-- десктоп: как было, моб. портрет: depLine зафиксирует "время слева, tz справа" -->
-    <div class="headerRow depLine" style="justify-content:flex-start;">
+    <div class="depInputs">
       <input id="depTime" type="time" value="05:00" step="60">
-
-      <div class="tzGroup" aria-label="Часовой пояс (дублирование строки для мобилы)">
-        <!-- эти кнопки будут скрыты на десктопе за счет одинакового id? нельзя.
-             поэтому: НЕ ДЕЛАЕМ дубль. Используем тот же tzGroup сверху.
-             Чтобы выполнить требование, переносим tzGroup на строку с input только на мобиле через CSS. -->
-      </div>
 
       <div id="deltaWrap">
         <span class="fieldTitle">Δ UTC?</span>
@@ -376,7 +356,7 @@ select.deltaSelect{
   <div class="sixRow">
 
     <div>
-      <!-- моб. портрет: заголовок в 2 строки + input справа в одну линию -->
+      <!-- На мобильном портрете: заголовок (2 строки) слева, input справа в одной линии -->
       <div class="sixInline">
         <div class="fieldTitle fullTitle wrap2">6) Время на<br>обратный полет</div>
         <input id="flightTime" type="time" value="02:30" step="60">
@@ -529,38 +509,6 @@ setInterval(()=>{
 ccBlock.classList.remove("open");
 setTzMode("MSK");
 render();
-</script>
-
-<script>
-/* ВАЖНО: Требование 1) относится только к мобильному портрету.
-   Для этого переносим tzGroup (кнопки) рядом с input в DOM на мобиле,
-   а на десктопе возвращаем в верхнюю строку.
-   Это не меняет логику, только расположение.
-*/
-(function(){
-  const tzGroupEl = document.querySelector('.tzGroup'); // первый tzGroup (верхний)
-  const topHeader = document.querySelectorAll('.headerRow')[0];
-  const depLine = document.querySelectorAll('.headerRow')[1]; // строка с input
-
-  function relocate(){
-    const isPortraitMobile = window.matchMedia('(max-width:639px)').matches;
-    if(!tzGroupEl || !topHeader || !depLine) return;
-
-    if(isPortraitMobile){
-      // переносим в строку с input (справа от input)
-      // вставляем перед deltaWrap, чтобы дельта оставалась самой правой
-      const delta = document.getElementById('deltaWrap');
-      depLine.insertBefore(tzGroupEl, delta);
-    }else{
-      // возвращаем в верхнюю строку
-      topHeader.appendChild(tzGroupEl);
-    }
-  }
-
-  window.addEventListener('resize', relocate);
-  window.addEventListener('orientationchange', relocate);
-  relocate();
-})();
 </script>
 </body>
 </html>
