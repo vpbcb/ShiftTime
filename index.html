@@ -77,6 +77,35 @@ select.deltaSelect{
   white-space:nowrap;
 }
 
+/* ВАЖНО: чтобы кнопка с классом fieldTitle НЕ наследовала padding:10px от button */
+button.fieldTitle{
+  padding:var(--titlePadV) var(--titlePadH);
+  border-radius:999px;
+  background:var(--pillBg);
+  border:1px solid var(--border);
+  font-weight:600;
+  line-height:1.1;
+}
+
+/* значок ? в кружке (для элементов с подсказкой) */
+.hasHint{ position:relative; }
+.hasHint::after{
+  content:"?";
+  position:absolute;
+  top:3px;
+  right:6px;
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  border:1px solid var(--ctlBorder);
+  background:#fff;
+  color:#333;
+  font-size:10px;
+  line-height:14px;
+  text-align:center;
+  pointer-events:none;
+}
+
 /* 1) блок вылета */
 .depGrid{
   display:grid;
@@ -125,6 +154,15 @@ select.deltaSelect{
 }
 #ccBlock.open{ max-height:260px; opacity:1; transform:translateY(0); }
 
+/* Δ UTC блок (теперь всегда отображается, без завязки на Local) */
+#deltaFold{ grid-area:delta; }
+.deltaInner{
+  display:flex;
+  align-items:center;
+  gap:8px;         /* вернули как было */
+  padding-top:6px; /* вернули как было */
+}
+
 /* ===== РЕЗУЛЬТАТЫ ===== */
 .results3{ display:grid; gap:12px; }
 @media (min-width:640px){ .results3{ grid-template-columns:1fr 1fr 1fr; } }
@@ -155,6 +193,14 @@ select.deltaSelect{
   white-space:nowrap;
 }
 
+/* если pill сделан кнопкой */
+button.pill{
+  padding:0 10px;
+  background:var(--pillBg);
+  border:1px solid var(--border);
+  line-height:1.1;
+}
+
 .timesTop{ padding-top:8px; }
 .out{ font-size:var(--resultTimeFs); font-weight:700; line-height:1.1; }
 
@@ -176,9 +222,9 @@ select.deltaSelect{
 
   .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
 
-  /* 1) на портрете: заголовок, строка input+tz, ниже delta (ВСЕГДА ВИДИМЫЙ) */
+  /* 1) на портрете: заголовок, строка input + (растянутые кнопки), ниже delta */
   .depGrid{
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr;           /* <-- важно: input слева "по факту", кнопкам даем остаток */
     grid-template-areas:
       "title title"
       "inputs tz"
@@ -186,10 +232,23 @@ select.deltaSelect{
     align-items:center;
   }
   .depTitle{ width:100%; justify-self:stretch; }
-  .depTz{ align-self:center; }
 
-  /* кнопки по размеру как заголовок */
-  .tzBtn, .modeBtn, .toggleBtn{
+  /* Растягиваем tzGroup равномерно от input до правого края */
+  .depTz.tzGroup{
+    width:100%;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .depTz .tzBtn{
+    flex:1;
+    text-align:center;
+    padding:var(--titlePadV) 0;   /* чуть компактнее и ровно */
+    font-size:var(--titleFs);
+    border-radius:999px;
+  }
+
+  /* кнопки прочие — по размеру как заголовок */
+  .modeBtn, .toggleBtn{
     padding:var(--titlePadV) var(--titlePadH);
     border-radius:999px;
     font-size:var(--titleFs);
@@ -211,10 +270,10 @@ select.deltaSelect{
   /* немного уменьшить высоту "Продолжительность смены" */
   .resultCard.durationCard{
     padding:8px 10px;
-    grid-template-rows:36px auto;
+    grid-template-rows:34px auto; /* ещё чуть ниже */
   }
   .resultCard.durationCard .pill{ height:28px; }
-  .resultCard.durationCard .timesTop{ padding-top:6px; }
+  .resultCard.durationCard .timesTop{ padding-top:5px; }
 
   /* 6) и LDT вертикально */
   .sixRow{ grid-template-columns:1fr; }
@@ -265,7 +324,7 @@ select.deltaSelect{
   border-radius:14px;
   padding:14px 14px;
   box-shadow:0 10px 30px rgba(0,0,0,0.2);
-  cursor:pointer; /* нажал — закрыл */
+  cursor:pointer;
 }
 .hintTitle{
   font-weight:700;
@@ -299,21 +358,20 @@ select.deltaSelect{
   <div class="depGrid">
     <span class="fieldTitle depTitle fullTitle">1) Время вылета по расписанию</span>
 
+    <div class="depLine">
+      <input id="depTime" type="time" value="05:00" step="60">
+    </div>
+
     <div class="tzGroup depTz" aria-label="Часовой пояс">
       <button type="button" id="btnMSK" class="tzBtn active" onclick="setTzMode('MSK')">МСК</button>
       <button type="button" id="btnUTC" class="tzBtn" onclick="setTzMode('UTC')">UTC</button>
       <button type="button" id="btnLOCAL" class="tzBtn" onclick="setTzMode('LOCAL')">Local</button>
     </div>
 
-    <div class="depLine">
-      <input id="depTime" type="time" value="05:00" step="60">
-    </div>
-
-    <!-- 1) Δ UTC — ВСЕГДА ВИДИМЫЙ (НЕ зависит от Local) -->
+    <!-- Δ UTC — всегда видим -->
     <div id="deltaFold">
       <div class="deltaInner">
-        <!-- кликаем по подложке Δ UTC? чтобы открыть подсказку -->
-        <button type="button" class="fieldTitle" onclick="openHint('delta')">Δ UTC?</button>
+        <button type="button" class="fieldTitle hasHint" onclick="openHint('delta')">Δ UTC?</button>
         <select id="deltaUtc" class="deltaSelect">
           <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
           <option value="4">4</option><option value="5">5</option><option value="6">6</option>
@@ -342,8 +400,7 @@ select.deltaSelect{
       </div>
 
       <div class="halfBlock">
-        <!-- кликаем по подложке "Усиленный экипаж?" чтобы подсказка -->
-        <button type="button" class="fieldTitle halfTitle" onclick="openHint('reinforced')">7) Усиленный экипаж?</button>
+        <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('reinforced')">7) Усиленный экипаж?</button>
         <button type="button" id="reinforcedBtn" class="toggleBtn" onclick="toggleReinforced()">Нет</button>
       </div>
     </div>
@@ -358,8 +415,7 @@ select.deltaSelect{
       </div>
 
       <div class="halfBlock">
-        <!-- подсказка по "Продление КВС?" -->
-        <button type="button" class="fieldTitle halfTitle" onclick="openHint('extend')">5) Продление КВС?</button>
+        <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('extend')">5) Продление КВС?</button>
         <button type="button" id="extendBtn" class="toggleBtn" onclick="toggleExtend()">Нет</button>
       </div>
     </div>
@@ -372,8 +428,7 @@ select.deltaSelect{
   <div class="results3">
 
     <div class="resultCard durationCard">
-      <!-- подсказка по "Продолжительность смены" -->
-      <button type="button" class="pill fullPill" onclick="openHint('duration')">Продолжительность смены</button>
+      <button type="button" class="pill fullPill hasHint" onclick="openHint('duration')">Продолжительность смены</button>
       <div class="timesTop" style="display:flex; justify-content:center;">
         <div class="out" id="outDuration">—</div>
       </div>
@@ -592,17 +647,10 @@ function openHint(key){
   hintTextEl.textContent = h.text;
   hintOverlay.classList.add("open");
 }
-function closeHint(){
-  hintOverlay.classList.remove("open");
-}
+function closeHint(){ hintOverlay.classList.remove("open"); }
 
 /* старт */
 ccBlock.classList.remove("open");
-/* Δ UTC всегда видим: просто оставляем блок открытым */
-document.getElementById("deltaFold").style.maxHeight = "none";
-document.getElementById("deltaFold").style.opacity = "1";
-document.getElementById("deltaFold").style.transform = "none";
-
 setTzMode("MSK");
 render();
 </script>
