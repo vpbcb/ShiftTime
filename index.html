@@ -36,7 +36,7 @@ input, button {
   cursor:pointer;
 }
 
-/* поля времени и UTC */
+/* поля времени и UTC-дельты */
 input[type="time"], input[type="number"]{
   width:120px;
   font-size:18.5px;
@@ -44,7 +44,7 @@ input[type="time"], input[type="number"]{
   justify-self:start;
 }
 
-/* кнопки режима */
+/* кнопки режима Flight/Cabin */
 .modeButtons { display:flex; gap:10px; }
 .modeBtn { flex:1; font-weight:600; }
 .modeBtn.active { background:#1976d2; color:#fff; border-color:#1976d2; }
@@ -62,7 +62,7 @@ input[type="time"], input[type="number"]{
 }
 #ccBlock.open { max-height:220px; opacity:1; transform:translateY(0); }
 
-/* ===== ПОДЛОЖКИ (как pill) для заголовков полей ввода времени ===== */
+/* ===== ПОДЛОЖКИ (как pill) для заголовков полей ===== */
 .fieldTitle{
   display:inline-block;
   font-size:12px;
@@ -71,6 +71,33 @@ input[type="time"], input[type="number"]{
   background:#f0f2f7;
   border:1px solid #e6e8ee;
   width: fit-content;
+}
+
+/* ===== КНОПКИ ЧАСОВОГО РЕЖИМА (МСК/UTC/Local) ===== */
+.tzGroup{
+  display:flex;
+  gap:8px;
+  justify-content:flex-start;
+  flex-wrap:nowrap;
+}
+.tzBtn{
+  font-weight:600;
+  padding:8px 10px;
+  border-radius:10px;
+}
+.tzBtn.active{
+  background:#1976d2;
+  color:#fff;
+  border-color:#1976d2;
+}
+
+/* блок с Δ UTC? появляется только при Local */
+#deltaWrap{
+  display:none;
+  margin-top:8px;
+}
+#deltaWrap.show{
+  display:block;
 }
 
 /* ===== РЕЗУЛЬТАТЫ ===== */
@@ -90,17 +117,14 @@ input[type="time"], input[type="number"]{
   .results3{ grid-template-columns:1fr 1fr 1fr; }
 }
 
-/* ВЫРАВНИВАНИЕ РЕЗУЛЬТАТОВ ПО ГОРИЗОНТАЛИ:
-   одинаковая "высота" шапки и отступы, чтобы времена шли строго на одной линии */
+/* выравнивание результатов по горизонтали */
 .resultBox{
   text-align:center;
   display:grid;
-  grid-template-rows: auto auto;
+  grid-template-rows:auto auto;
   align-items:start;
 }
-.resultBox .out{
-  align-self:end;
-}
+.resultBox .out{ align-self:end; }
 
 .ldtBox{ text-align:center; }
 
@@ -111,8 +135,8 @@ input[type="time"], input[type="number"]{
   border-radius:999px;
   background:#f0f2f7;
   border:1px solid #e6e8ee;
-  width: fit-content;         /* одинаковый стиль */
-  justify-self:center;        /* центрируем внутри блока */
+  width: fit-content;
+  justify-self:center;
 }
 .out{ font-size:21px; font-weight:700; margin-top:6px; }
 </style>
@@ -126,16 +150,27 @@ input[type="time"], input[type="number"]{
 </div>
 
 <div class="card">
+  <!-- СТРОКА: слева 1), справа кнопки МСК/UTC/Local (+ Δ UTC? только при Local) -->
   <div class="row keepTwo">
     <label>
-      <span class="fieldTitle">1) Время вылета по расписанию (МСК)</span>
+      <span class="fieldTitle">1) Время вылета по расписанию</span>
       <input id="depTime" type="time" value="05:00" step="60">
     </label>
 
-    <label>
-      <span class="fieldTitle">Δ UTC?</span>
-      <input id="deltaUtc" type="number" value="0" step="1">
-    </label>
+    <div>
+      <div class="tzGroup" aria-label="Часовой пояс">
+        <button type="button" id="btnMSK" class="tzBtn active" onclick="setTzMode('MSK')">МСК</button>
+        <button type="button" id="btnUTC" class="tzBtn" onclick="setTzMode('UTC')">UTC</button>
+        <button type="button" id="btnLOCAL" class="tzBtn" onclick="setTzMode('LOCAL')">Local</button>
+      </div>
+
+      <div id="deltaWrap">
+        <label style="margin-top:0;">
+          <span class="fieldTitle">Δ UTC?</span>
+          <input id="deltaUtc" type="number" value="0" step="1" inputmode="numeric">
+        </label>
+      </div>
+    </div>
   </div>
 
   <label style="margin-top:10px;">
@@ -211,6 +246,27 @@ input[type="time"], input[type="number"]{
 <script>
 let cabincrew="нет", airport="UUEE", reinforced="нет", landings="1-2", extend="нет";
 
+/* Новый режим времени (пока НЕ влияет на расчеты, как вы и просили) */
+let tzMode = "MSK"; // MSK | UTC | LOCAL
+
+function setTzMode(mode){
+  tzMode = mode;
+
+  btnMSK.classList.toggle("active", tzMode==="MSK");
+  btnUTC.classList.toggle("active", tzMode==="UTC");
+  btnLOCAL.classList.toggle("active", tzMode==="LOCAL");
+
+  if(tzMode==="LOCAL"){
+    deltaWrap.classList.add("show");
+  } else {
+    deltaWrap.classList.remove("show");
+    // чтобы не было "скрытого" влияния в будущем — держим 0
+    if (typeof deltaUtc !== "undefined" && deltaUtc) deltaUtc.value = "0";
+  }
+
+  render();
+}
+
 function setCrew(type){
   cabincrew=(type==="cabin")?"да":"нет";
   btnFlight.classList.toggle("active",cabincrew==="нет");
@@ -222,6 +278,7 @@ function setCrew(type){
   }
   render();
 }
+
 function toggleAirport(){ airport=airport==="UUEE"?"другой":"UUEE"; airportBtn.textContent=airport; render(); }
 function toggleReinforced(){ reinforced=reinforced==="нет"?"да":"нет"; reinforcedBtn.textContent=reinforced==="да"?"Да":"Нет"; render(); }
 function toggleLandings(){ landings=landings==="1-2"?"3-4":"1-2"; landingsBtn.textContent=landings==="1-2"?"1–2":"3–4"; render(); }
@@ -233,6 +290,9 @@ function fmt(m){ m=(m+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0"
 function calculate(){
   const dep=parseTime(depTime.value), flt=parseTime(flightTime.value);
   if(dep==null||flt==null) return null;
+
+  // ВАЖНО: tzMode и deltaUtc пока НЕ участвуют в расчетах (логика не меняется)
+  // const delta = (tzMode==="LOCAL") ? Number(deltaUtc.value||0) : 0;
 
   const checkIn=dep-((cabincrew==="да"&&airport==="UUEE")?90:60);
   const isDay=checkIn>=361&&checkIn<=1319;
@@ -263,15 +323,20 @@ function render(){
 }
 
 /* моментальный пересчет */
-let lastDep=depTime.value, lastFlt=flightTime.value, lastUtc=deltaUtc.value;
+let lastDep=depTime.value, lastFlt=flightTime.value;
+let lastTz=tzMode, lastDelta="0";
+
 setInterval(()=>{
-  if(depTime.value!==lastDep || flightTime.value!==lastFlt || deltaUtc.value!==lastUtc){
-    lastDep=depTime.value; lastFlt=flightTime.value; lastUtc=deltaUtc.value;
+  const deltaVal = (tzMode==="LOCAL" && deltaWrap.classList.contains("show") && window.deltaUtc) ? deltaUtc.value : "0";
+  if(depTime.value!==lastDep || flightTime.value!==lastFlt || tzMode!==lastTz || deltaVal!==lastDelta){
+    lastDep=depTime.value; lastFlt=flightTime.value; lastTz=tzMode; lastDelta=deltaVal;
     render();
   }
 },150);
 
+/* старт */
 ccBlock.classList.remove("open");
+setTzMode("MSK");   // по умолчанию МСК (и дельта скрыта)
 render();
 </script>
 </body>
