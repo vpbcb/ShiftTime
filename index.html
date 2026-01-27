@@ -426,27 +426,29 @@ button.pill{
 
   .headerCard{ width:100%; }
 
-  /* ✅ важное: убираем внешний скролл */
+  /* внешний скролл выключаем */
   .scrollArea{ overflow:hidden; }
 
+  /* две колонки, НО без растягивания красного на всю высоту */
   .wrap{
     max-width:none;
     padding:10px 14px;
     display:grid;
     grid-template-columns: 1fr 1fr;
     gap:10px;
-    height:100%;
+    align-items:start;
     overflow:hidden;
-    align-items:stretch;
+
+    /* ✅ ограничиваем область между фикс. хедером и футером */
+    max-height: calc(100vh - var(--fixedHeaderH) - var(--fixedFooterH));
   }
 
-  /* левый скроллится сам */
+  /* ✅ красный: высота по контенту, но если вдруг станет выше — скролл внутри */
   #inputsCard{
     grid-column:1;
     grid-row:1;
-    height:100%;
-    overflow:auto;
-    -webkit-overflow-scrolling:touch;
+    height:auto;
+
   }
 
   /* правый скроллится сам, высота задаётся JS */
