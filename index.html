@@ -28,12 +28,50 @@
   --resultTimeFs:21px;
 
   --hintFs:12.5px;
-
   --actionBtnHSmall:38px;
+
+  /* фиксированные отступы для скролл-зоны (подогнаны под минимально комфортный хедер/футер) */
+  --fixedHeaderH: 70px;
+  --fixedFooterH: 54px;
 }
 
 *{ box-sizing:border-box; font-family:Arial, sans-serif; }
 body{ margin:0; background:var(--bg); color:var(--ink); }
+
+/* === FIXED HEADER / FOOTER === */
+.headerFixed{
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:1000;
+  background:transparent;
+}
+.footerFixed{
+  position:fixed;
+  bottom:0; left:0; right:0;
+  z-index:1000;
+  background:transparent;
+}
+
+/* минимально комфортные паддинги у фиксированных областей */
+.headerWrap{
+  max-width:720px;
+  margin:auto;
+  padding:8px 14px;
+}
+.footerWrap{
+  max-width:720px;
+  margin:auto;
+  padding:8px 14px;
+}
+
+/* скроллится только эта зона */
+.scrollArea{
+  position:fixed;
+  top:var(--fixedHeaderH);
+  bottom:var(--fixedFooterH);
+  left:0; right:0;
+  overflow:auto;
+}
 .wrap{ max-width:720px; margin:auto; padding:14px; }
 
 .card{
@@ -44,13 +82,15 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   margin-bottom:10px;
 }
 
+/* верхний блок (минимальная высота, кнопку не трогаем) */
 .headerCard{
   background:var(--accent);
   border-color:var(--accent);
   color:#fff;
+  padding:8px 12px;         /* уменьшили высоту блока */
+  margin:0;                 /* чтобы не увеличивать fixed-высоту */
 }
 
-/* Хедер: заголовок по центру между левым краем и кнопкой */
 .headerBar{
   display:flex;
   align-items:center;
@@ -60,7 +100,7 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
 h1{
   margin:0;
   font-size:20px;
-  text-align:center; /* ✅ изменено */
+  text-align:center; /* между левым краем и кнопкой */
   flex:1;
 }
 
@@ -72,24 +112,23 @@ h1{
   padding:8px 12px;
   font-weight:700;
   cursor:pointer;
-  height:38px;
+  height:38px;              /* НЕ МЕНЯЕМ */
   display:flex;
   align-items:center;
 }
 .saveBtn:active{ transform:translateY(1px); }
 .saveBtn.saved{ background:rgba(255,255,255,0.28); }
 
-/* ✅ нижняя кнопка "Сбросить" — такая же, но на всю ширину */
+/* нижняя кнопка "Сбросить" — синяя, на всю ширину */
 .resetBtn{
   width:100%;
   justify-content:center;
-  margin-top:10px;
-
-  background:rgba(255,255,255,0.16);
-  border:1px solid rgba(255,255,255,0.65);
+  background:var(--accent);
+  border:1px solid var(--accent);
   color:#fff;
 }
 
+/* --- остальной CSS без изменений --- */
 input,button,select{
   padding:10px;
   border-radius:10px;
@@ -367,146 +406,160 @@ button.pill{
 </head>
 
 <body>
-<div class="wrap">
 
-<div class="card headerCard">
-  <div class="headerBar">
-    <h1>Расчет смены</h1>
-    <button type="button" id="btnSave" class="saveBtn" onclick="saveState()">Сохранить</button>
+<!-- FIXED HEADER -->
+<div class="headerFixed">
+  <div class="headerWrap">
+    <div class="card headerCard">
+      <div class="headerBar">
+        <h1>Расчет смены</h1>
+        <button type="button" id="btnSave" class="saveBtn" onclick="saveState()">Сохранить</button>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="card">
+<!-- SCROLLABLE CONTENT -->
+<div class="scrollArea">
+  <div class="wrap">
 
-  <div class="depGrid">
-    <span class="fieldTitle depTitle fullTitle">Время вылета по расписанию</span>
+    <div class="card">
 
-    <div class="depLine">
-      <input id="depTime" type="time" value="05:00" step="60">
-    </div>
+      <div class="depGrid">
+        <span class="fieldTitle depTitle fullTitle">Время вылета по расписанию</span>
 
-    <div class="tzGroup depTz" aria-label="Часовой пояс">
-      <button type="button" id="btnMSK" class="tzBtn active" onclick="setTzMode('MSK')">МСК</button>
-      <button type="button" id="btnUTC" class="tzBtn" onclick="setTzMode('UTC')">UTC</button>
-      <button type="button" id="btnLOCAL" class="tzBtn" onclick="setTzMode('LOCAL')">Local</button>
-    </div>
+        <div class="depLine">
+          <input id="depTime" type="time" value="05:00" step="60">
+        </div>
 
-    <div id="deltaFold">
-      <div class="deltaInner">
-        <button type="button" class="fieldTitle hasHint" onclick="openHint('delta')">Δ UTC</button>
-        <select id="deltaUtc" class="deltaSelect">
-          <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
-          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-          <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-          <option value="10">10</option><option value="11">11</option><option value="12">12</option>
-        </select>
-      </div>
-    </div>
-  </div>
+        <div class="tzGroup depTz" aria-label="Часовой пояс">
+          <button type="button" id="btnMSK" class="tzBtn active" onclick="setTzMode('MSK')">МСК</button>
+          <button type="button" id="btnUTC" class="tzBtn" onclick="setTzMode('UTC')">UTC</button>
+          <button type="button" id="btnLOCAL" class="tzBtn" onclick="setTzMode('LOCAL')">Local</button>
+        </div>
 
-  <div style="margin-top:12px;">
-    <div class="fieldTitle fullTitle">Расчет для</div>
-    <div class="modeButtons" style="margin-top:10px;">
-      <button type="button" id="btnFlight" class="modeBtn actionBtnSmall active" onclick="setCrew('flight')">Flight Crew</button>
-      <button type="button" id="btnCabin" class="modeBtn actionBtnSmall" onclick="setCrew('cabin')">Cabin Crew</button>
-    </div>
-  </div>
-
-  <div id="ccBlock" style="margin-top:12px;">
-    <div class="pairRow">
-      <div class="halfBlock">
-        <div class="fieldTitle halfTitle">Аэропорт явки</div>
-        <button type="button" id="airportBtn" class="toggleBtn actionBtnSmall" onclick="toggleAirport()">UUEE</button>
-      </div>
-
-      <div class="halfBlock">
-        <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('reinforced')">Усиленный экипаж</button>
-        <button type="button" id="reinforcedBtn" class="toggleBtn actionBtnSmall" onclick="toggleReinforced()">Нет</button>
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:12px;">
-    <div class="pairRow">
-      <div class="halfBlock">
-        <div class="fieldTitle halfTitle">Кол-во посадок</div>
-        <button type="button" id="landingsBtn" class="toggleBtn actionBtnSmall" onclick="toggleLandings()">1–2</button>
-      </div>
-
-      <div class="halfBlock">
-        <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('extend')">Продление КВС</button>
-        <button type="button" id="extendBtn" class="toggleBtn actionBtnSmall" onclick="toggleExtend()">Нет</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div class="card">
-  <div class="results3">
-
-    <div class="resultCard durationCard">
-      <button type="button" class="pill fullPill hasHint" onclick="openHint('duration')">Продолжительность смены</button>
-      <div class="timesTop" style="display:flex; justify-content:center;">
-        <div class="out" id="outDuration">—</div>
-      </div>
-    </div>
-
-    <div class="resultCard">
-      <div class="pill fullPill">Окончание смены</div>
-      <div class="timesTop">
-        <div class="multiTimes">
-          <div class="mtCol"><div class="mtTime" id="outEndMSK">—</div><div class="mtLbl">МСК</div></div>
-          <div class="mtCol"><div class="mtTime" id="outEndUTC">—</div><div class="mtLbl">UTC</div></div>
-          <div class="mtCol"><div class="mtTime" id="outEndLOC">—</div><div class="mtLbl">Local</div></div>
+        <div id="deltaFold">
+          <div class="deltaInner">
+            <button type="button" class="fieldTitle hasHint" onclick="openHint('delta')">Δ UTC</button>
+            <select id="deltaUtc" class="deltaSelect">
+              <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+              <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+            </select>
+          </div>
         </div>
       </div>
+
+      <div style="margin-top:12px;">
+        <div class="fieldTitle fullTitle">Расчет для</div>
+        <div class="modeButtons" style="margin-top:10px;">
+          <button type="button" id="btnFlight" class="modeBtn actionBtnSmall active" onclick="setCrew('flight')">Flight Crew</button>
+          <button type="button" id="btnCabin" class="modeBtn actionBtnSmall" onclick="setCrew('cabin')">Cabin Crew</button>
+        </div>
+      </div>
+
+      <div id="ccBlock" style="margin-top:12px;">
+        <div class="pairRow">
+          <div class="halfBlock">
+            <div class="fieldTitle halfTitle">Аэропорт явки</div>
+            <button type="button" id="airportBtn" class="toggleBtn actionBtnSmall" onclick="toggleAirport()">UUEE</button>
+          </div>
+
+          <div class="halfBlock">
+            <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('reinforced')">Усиленный экипаж</button>
+            <button type="button" id="reinforcedBtn" class="toggleBtn actionBtnSmall" onclick="toggleReinforced()">Нет</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="pairRow">
+          <div class="halfBlock">
+            <div class="fieldTitle halfTitle">Кол-во посадок</div>
+            <button type="button" id="landingsBtn" class="toggleBtn actionBtnSmall" onclick="toggleLandings()">1–2</button>
+          </div>
+
+          <div class="halfBlock">
+            <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('extend')">Продление КВС</button>
+            <button type="button" id="extendBtn" class="toggleBtn actionBtnSmall" onclick="toggleExtend()">Нет</button>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="resultCard">
-      <div class="pill fullPill">Выключение двигателей</div>
-      <div class="timesTop">
-        <div class="multiTimes">
-          <div class="mtCol"><div class="mtTime" id="outEngMSK">—</div><div class="mtLbl">МСК</div></div>
-          <div class="mtCol"><div class="mtTime" id="outEngUTC">—</div><div class="mtLbl">UTC</div></div>
-          <div class="mtCol"><div class="mtTime" id="outEngLOC">—</div><div class="mtLbl">Local</div></div>
+    <div class="card">
+      <div class="results3">
+
+        <div class="resultCard durationCard">
+          <button type="button" class="pill fullPill hasHint" onclick="openHint('duration')">Продолжительность смены</button>
+          <div class="timesTop" style="display:flex; justify-content:center;">
+            <div class="out" id="outDuration">—</div>
+          </div>
         </div>
+
+        <div class="resultCard">
+          <div class="pill fullPill">Окончание смены</div>
+          <div class="timesTop">
+            <div class="multiTimes">
+              <div class="mtCol"><div class="mtTime" id="outEndMSK">—</div><div class="mtLbl">МСК</div></div>
+              <div class="mtCol"><div class="mtTime" id="outEndUTC">—</div><div class="mtLbl">UTC</div></div>
+              <div class="mtCol"><div class="mtTime" id="outEndLOC">—</div><div class="mtLbl">Local</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="resultCard">
+          <div class="pill fullPill">Выключение двигателей</div>
+          <div class="timesTop">
+            <div class="multiTimes">
+              <div class="mtCol"><div class="mtTime" id="outEngMSK">—</div><div class="mtLbl">МСК</div></div>
+              <div class="mtCol"><div class="mtTime" id="outEngUTC">—</div><div class="mtLbl">UTC</div></div>
+              <div class="mtCol"><div class="mtTime" id="outEngLOC">—</div><div class="mtLbl">Local</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sixRow">
+
+        <div>
+          <div class="sixInline">
+            <div class="fieldTitle fullTitle wrap2">Время на<br>обратный полет</div>
+            <input id="flightTime" type="time" value="02:30" step="60">
+          </div>
+        </div>
+
+        <div>
+          <div class="pill fullPill" id="ldtPill">LDT</div>
+
+          <div class="timesTop">
+            <div class="multiTimes">
+              <div class="mtCol"><div class="mtTime" id="outLdtMSK">—</div><div class="mtLbl">МСК</div></div>
+              <div class="mtCol"><div class="mtTime" id="outLdtUTC">—</div><div class="mtLbl">UTC</div></div>
+              <div class="mtCol"><div class="mtTime" id="outLdtLOC">—</div><div class="mtLbl">Local</div></div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
   </div>
 </div>
 
-<div class="card">
-  <div class="sixRow">
-
-    <div>
-      <div class="sixInline">
-        <div class="fieldTitle fullTitle wrap2">Время на<br>обратный полет</div>
-        <input id="flightTime" type="time" value="02:30" step="60">
-      </div>
-    </div>
-
-    <div>
-      <div class="pill fullPill" id="ldtPill">LDT</div>
-
-      <div class="timesTop">
-        <div class="multiTimes">
-          <div class="mtCol"><div class="mtTime" id="outLdtMSK">—</div><div class="mtLbl">МСК</div></div>
-          <div class="mtCol"><div class="mtTime" id="outLdtUTC">—</div><div class="mtLbl">UTC</div></div>
-          <div class="mtCol"><div class="mtTime" id="outLdtLOC">—</div><div class="mtLbl">Local</div></div>
-        </div>
-      </div>
-    </div>
-
+<!-- FIXED FOOTER -->
+<div class="footerFixed">
+  <div class="footerWrap">
+    <button type="button" id="btnReset" class="saveBtn resetBtn" onclick="resetState()">Сбросить</button>
   </div>
 </div>
 
-<!-- ✅ НОВОЕ: кнопка Сбросить в самом низу -->
-<button type="button" id="btnReset" class="saveBtn resetBtn" onclick="resetState()">Сбросить</button>
-
-</div>
-
+<!-- Оверлей подсказок -->
 <div id="hintOverlay" class="hintOverlay" onclick="closeHint()">
   <div class="hintBox" onclick="closeHint()">
     <p class="hintTitle" id="hintTitle">Пояснение</p>
@@ -707,7 +760,6 @@ function loadState(){
   }catch(e){}
 }
 
-/* ✅ НОВОЕ: сброс к исходному состоянию */
 function resetState(){
   localStorage.removeItem("shiftcalc_state");
 
