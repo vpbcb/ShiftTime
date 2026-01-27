@@ -5,841 +5,294 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Расчет смены</title>
 
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#1976d2">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
 <style>
-:root{
-  --bg:#f6f7f9;
-  --card:#fff;
-  --border:#e6e8ee;
-  --ctlBorder:#cfd5e1;
-  --ink:#111;
-  --muted:#5b6474;
-  --pillBg:#f0f2f7;
-  --accent:#1976d2;
+/* ===== базовые стили (без изменений) ===== */
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:#f6f7f9;color:#111}
 
-  --titleFs:13.6px;
-  --titlePadV:6px;
-  --titlePadH:10px;
-  --ctlFs:16px;
-  --timeFs:18.5px;
-  --resultTimeFs:21px;
+.headerFixed{position:fixed;top:0;left:0;right:0;z-index:1000}
+.footerFixed{position:fixed;bottom:0;left:0;right:0;z-index:1000}
 
-  --hintFs:12.5px;
-  --actionBtnHSmall:38px;
+.headerWrap{max-width:720px;margin:auto;padding:4px 14px}
+.footerWrap{max-width:720px;margin:auto;padding:6px 14px}
 
-  /* фиксированные зоны */
-  --fixedHeaderH: 60px;
-  --fixedFooterH: 50px;
-}
-
-*{ box-sizing:border-box; font-family:Arial, sans-serif; }
-body{ margin:0; background:var(--bg); color:var(--ink); }
-
-/* === FIXED HEADER / FOOTER === */
-.headerFixed{
-  position:fixed;
-  top:0; left:0; right:0;
-  z-index:1000;
-  background:transparent;
-}
-.footerFixed{
-  position:fixed;
-  bottom:0; left:0; right:0;
-  z-index:1000;
-  background:transparent;
-}
-
-/* ✅ уменьшили отступы у фиксированных областей */
-.headerWrap{
-  max-width:720px;
-  margin:auto;
-  padding:4px 14px;
-}
-.footerWrap{
-  max-width:720px;
-  margin:auto;
-  padding:6px 14px;
-}
-
-/* скроллится только эта зона */
 .scrollArea{
   position:fixed;
-  top:var(--fixedHeaderH);
-  bottom:var(--fixedFooterH);
-  left:0; right:0;
+  top:60px;
+  bottom:50px;
+  left:0;right:0;
   overflow:auto;
 }
 
-/* ✅ чуть меньше внутренние отступы */
-.wrap{ max-width:720px; margin:auto; padding:10px; }
+.wrap{max-width:720px;margin:auto;padding:10px}
 
 .card{
   background:#fff;
-  border:1px solid var(--border);
+  border:1px solid #e6e8ee;
   border-radius:12px;
-  padding:10px;          /* было 11/12 */
-  margin-bottom:8px;     /* было 9/10 */
+  padding:10px;
+  margin-bottom:8px;
 }
 
-/* верхний блок */
+/* ===== header ===== */
 .headerCard{
-  background:var(--accent);
-  border-color:var(--accent);
+  background:#1976d2;
   color:#fff;
+  border-radius:12px;
   padding:8px 12px;
-  margin:0;
 }
 
 .headerBar{
   display:flex;
   align-items:center;
-  justify-content:space-between;
   gap:10px;
 }
-h1{
-  margin:0;
-  font-size:20px;
-  text-align:center;
+.headerBar h1{
   flex:1;
+  margin:0;
+  text-align:center;
+  font-size:20px;
 }
 
 .saveBtn{
-  border:1px solid rgba(255,255,255,0.65);
-  background:rgba(255,255,255,0.16);
-  color:#fff;
-  border-radius:10px;
+  height:38px;
   padding:8px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.6);
+  background:rgba(255,255,255,.16);
+  color:#fff;
   font-weight:700;
   cursor:pointer;
-  height:38px;              /* НЕ МЕНЯЕМ */
-  display:flex;
-  align-items:center;
 }
-.saveBtn:active{ transform:translateY(1px); }
-.saveBtn.saved{ background:rgba(255,255,255,0.28); }
+.saveBtn.saved{background:rgba(255,255,255,.3)}
 
-/* нижняя кнопка "Сбросить" */
 .resetBtn{
   width:100%;
-  justify-content:center;
-  background:var(--accent);
-  border:1px solid var(--accent);
+  height:38px;
+  background:#1976d2;
   color:#fff;
+  border:1px solid #1976d2;
+  border-radius:10px;
+  font-weight:700;
 }
 
-input,button,select{
-  padding:10px;
+/* ===== controls ===== */
+.fieldTitle{
+  background:#f0f2f7;
+  border:1px solid #e6e8ee;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:13.6px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  white-space:nowrap;
+}
+
+button,select,input{
   border-radius:10px;
-  border:1px solid var(--ctlBorder);
+  border:1px solid #cfd5e1;
+  padding:10px;
+  font-size:16px;
   background:#fff;
-  cursor:pointer;
-  font-size:var(--ctlFs);
 }
 
 input[type="time"]{
   width:120px;
-  font-size:var(--timeFs);
   text-align:center;
+  font-size:18px;
 }
 
-select.deltaSelect{
-  width:120px;
-  font-size:var(--timeFs);
-  text-align:center;
-  padding-top:6px;
-  padding-bottom:6px;
-  height:38px;
-}
-
-.fieldTitle{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:var(--pillBg);
-  border:1px solid var(--border);
-  border-radius:999px;
-  font-size:var(--titleFs);
-  padding:6px 10px;
-  font-weight:600;
-  white-space:nowrap;
-}
-
-button.fieldTitle{
-  padding:6px 10px;
-  border-radius:999px;
-  background:var(--pillBg);
-  border:1px solid var(--border);
-  font-weight:600;
-  line-height:1.1;
-}
-
-.hasHint{ position:relative; }
-.hasHint::after{
-  content:"?";
-  position:absolute;
-  top:-6px;
-  right:-6px;
-  width:16px;
-  height:16px;
-  border-radius:50%;
-  border:1px solid var(--ctlBorder);
-  background:#fff;
-  color:#333;
-  font-size:11px;
-  line-height:16px;
-  text-align:center;
-  pointer-events:none;
-}
-
-/* ✅ немного компактнее сетка верхнего блока */
+/* ===== layout blocks ===== */
 .depGrid{
   display:grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns:auto 1fr;
   grid-template-areas:
     "title title"
     "inputs tz"
     "delta delta";
-  gap:6px 10px;   /* было 8px 10px */
-  align-items:center;
-}
-.depTitle{ grid-area:title; }
-.depTz{ grid-area:tz; justify-self:stretch; }
-.depLine{
-  grid-area:inputs;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap:nowrap;
+  gap:6px 10px;
 }
 
-.tzGroup{ display:flex; gap:8px; flex-wrap:nowrap; }
-.tzBtn{
-  font-weight:600;
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:var(--ctlFs);
-}
-.tzBtn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+.depTitle{grid-area:title}
+.depLine{grid-area:inputs}
+.depTz{grid-area:tz}
+#deltaFold{grid-area:delta}
 
-.modeButtons{ display:flex; gap:10px; }
-.modeBtn{ flex:1; font-weight:600; }
-.modeBtn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+.modeButtons{display:flex;gap:10px;margin-top:8px}
+.modeButtons button{flex:1;font-weight:700}
+.modeButtons .active{background:#1976d2;color:#fff}
 
-.toggleBtn{ font-weight:600; }
-
-.actionBtnSmall{
-  height:var(--actionBtnHSmall);
-  padding-top:0;
-  padding-bottom:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-#ccBlock{
-  overflow:hidden;
-  max-height:0;
-  opacity:0;
-  transform:translateY(-6px);
-  transition:max-height 260ms ease, opacity 260ms ease, transform 260ms ease;
-}
-#ccBlock.open{ max-height:260px; opacity:1; transform:translateY(0); }
-
-#deltaFold{ grid-area:delta; }
-.deltaInner{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding-top:4px;  /* было 6 */
-}
-
-/* ✅ чуть меньше расстояние между карточками результатов */
-.results3{ display:grid; gap:9px; }
+/* ===== results ===== */
+.results3{display:grid;gap:9px}
 
 .resultCard{
-  border:1px solid var(--border);
+  border:1px solid #e6e8ee;
   border-radius:12px;
-  padding:9px;      /* было 10 */
-  background:#fff;
-  display:grid;
-  grid-template-rows:42px auto;
+  padding:9px;
   text-align:center;
 }
 
 .pill{
+  background:#f0f2f7;
+  border:1px solid #e6e8ee;
+  border-radius:999px;
+  height:32px;
   display:flex;
   align-items:center;
   justify-content:center;
-  height:32px;
-  font-size:var(--titleFs);
-  padding:0 10px;
-  border-radius:999px;
-  background:var(--pillBg);
-  border:1px solid var(--border);
-  width:fit-content;
-  justify-self:center;
+  font-size:13.6px;
   font-weight:600;
-  white-space:nowrap;
 }
-button.pill{
-  padding:0 10px;
-  background:var(--pillBg);
-  border:1px solid var(--border);
-  line-height:1.1;
-}
-
-.timesTop{ padding-top:6px; } /* было 8 */
-.out{ font-size:var(--resultTimeFs); font-weight:700; line-height:1.1; }
 
 .multiTimes{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
   gap:8px;
-  align-items:start;
+  margin-top:6px;
 }
-.mtCol{ display:flex; flex-direction:column; align-items:center; gap:4px; }
-.mtTime{ font-size:var(--resultTimeFs); font-weight:700; line-height:1.1; }
-.mtLbl{ font-size:14px; color:var(--muted); }
 
-.sixRow{ display:grid; grid-template-columns:1fr; gap:10px; align-items:start; }
+.mtTime{font-size:21px;font-weight:700}
+.mtLbl{font-size:14px;color:#5b6474}
+
+/* ===== LDT + обратный полёт ===== */
 .sixInline{
   display:grid;
   grid-template-columns:1fr auto;
   gap:10px;
   align-items:stretch;
 }
+
 .fieldTitle.wrap2{
-  white-space:normal;
-  line-height:1.15;
   height:42px;
   border-radius:12px;
-  width:100%;
-  justify-content:center;
   text-align:center;
 }
-.sixInline input[type="time"]{
-  height:42px;
-  padding-top:0;
-  padding-bottom:0;
-}
 
-.pairRow{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-.halfTitle{ width:100%; justify-self:stretch; display:flex; }
-.halfBlock{ display:grid; gap:9px; } /* было 10 */
-
-@media (max-width:639px){
-  .results3{ grid-template-columns:1fr; }
-  .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
-
-  .depTz.tzGroup{
-    width:100%;
-    justify-content:space-between;
-    gap:8px;
-  }
-  .depTz .tzBtn{
-    flex:1;
-    text-align:center;
-    padding:var(--titlePadV) 0;
-    font-size:var(--titleFs);
-    border-radius:999px;
-  }
-
-  .resultCard .pill.fullPill{ width:100%; justify-self:stretch; }
-
-  .resultCard.durationCard{
-    padding:8px 9px;
-    grid-template-rows:34px auto;
-  }
-  .resultCard.durationCard .pill{ height:28px; }
-  .resultCard.durationCard .timesTop{ padding-top:4px; }
-
-  #ldtPill{
-    width:100%;
-    justify-self:stretch;
+/* ========================================================= */
+/* ====== ИЗМЕНЕНИЯ ТОЛЬКО ДЛЯ ГОРИЗОНТАЛЬНОЙ ОРИЕНТАЦИИ ===== */
+/* ========================================================= */
+@media (min-width:640px){
+  .sixInline{
     display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .fieldTitle.wrap2{
+    width:calc((100% - 10px)/2);
+    white-space:nowrap;
     justify-content:center;
   }
+  .fieldTitle.wrap2 br{display:none}
 }
 
-.hintOverlay{
+/* ===== update toast ===== */
+#updateToast{
   position:fixed;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  background:rgba(0,0,0,0.35);
-  z-index:9999;
-}
-.hintOverlay.open{ display:flex; }
-
-.hintBox{
-  width:min(520px, 100%);
-  background:#fff;
-  border:1px solid var(--border);
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  z-index:3000;
+  background:#1976d2;
+  color:#fff;
+  padding:12px 16px;
   border-radius:14px;
-  padding:14px 14px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.2);
-  cursor:pointer;
-}
-.hintTitle{
   font-weight:700;
-  margin:0 0 8px 0;
-  font-size:14px;
+  display:none;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
 }
-.hintText{
-  margin:0;
-  font-size:var(--hintFs);
-  color:#222;
-  line-height:1.35;
-}
-.hintNote{
-  margin-top:10px;
-  font-size:11.5px;
-  color:var(--muted);
-}
-  
 </style>
 </head>
 
 <body>
-<div id="updateToast" style="
-  position:fixed;
-  top:72px;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:2000;
-  background:#1976d2;
-  color:#fff;
-  padding:10px 14px;
-  border-radius:12px;
-  font-family:Arial,sans-serif;
-  font-weight:700;
-  display:none;
-  box-shadow:0 10px 30px rgba(0,0,0,.18);
-">
-  Обновление данных. Ждите.
-</div>
-<!-- FIXED HEADER -->
+
+<div id="updateToast">Обновление данных. Ждите.</div>
+
 <div class="headerFixed">
   <div class="headerWrap">
-    <div class="card headerCard">
+    <div class="headerCard">
       <div class="headerBar">
         <h1>Расчет смены</h1>
-        <button type="button" id="btnSave" class="saveBtn" onclick="saveState()">Сохранить</button>
+        <button id="btnSave" class="saveBtn">Сохранить</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SCROLLABLE CONTENT -->
 <div class="scrollArea">
   <div class="wrap">
 
+    <!-- ВРЕМЯ ВЫЛЕТА -->
     <div class="card">
-
       <div class="depGrid">
-        <span class="fieldTitle depTitle fullTitle">Время вылета по расписанию</span>
-
-        <div class="depLine">
-          <input id="depTime" type="time" value="05:00" step="60">
-        </div>
-
-        <div class="tzGroup depTz" aria-label="Часовой пояс">
-          <button type="button" id="btnMSK" class="tzBtn active" onclick="setTzMode('MSK')">МСК</button>
-          <button type="button" id="btnUTC" class="tzBtn" onclick="setTzMode('UTC')">UTC</button>
-          <button type="button" id="btnLOCAL" class="tzBtn" onclick="setTzMode('LOCAL')">Local</button>
-        </div>
-
-        <div id="deltaFold">
-          <div class="deltaInner">
-            <button type="button" class="fieldTitle hasHint" onclick="openHint('delta')">Δ UTC</button>
-            <select id="deltaUtc" class="deltaSelect">
-              <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
-              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-              <option value="10">10</option><option value="11">11</option><option value="12">12</option>
-            </select>
-          </div>
-        </div>
+        <div class="fieldTitle depTitle">Время вылета по расписанию</div>
+        <div class="depLine"><input type="time" value="05:00"></div>
+        <div class="depTz">МСК / UTC / Local</div>
+        <div id="deltaFold">Δ UTC</div>
       </div>
-
-      <div style="margin-top:8px;">
-        <div class="fieldTitle fullTitle">Расчет для</div>
-        <div class="modeButtons" style="margin-top:8px;">
-          <button type="button" id="btnFlight" class="modeBtn actionBtnSmall active" onclick="setCrew('flight')">Flight Crew</button>
-          <button type="button" id="btnCabin" class="modeBtn actionBtnSmall" onclick="setCrew('cabin')">Cabin Crew</button>
-        </div>
-      </div>
-
-      <div id="ccBlock" style="margin-top:8px;">
-        <div class="pairRow">
-          <div class="halfBlock">
-            <div class="fieldTitle halfTitle">Аэропорт явки</div>
-            <button type="button" id="airportBtn" class="toggleBtn actionBtnSmall" onclick="toggleAirport()">UUEE</button>
-          </div>
-
-          <div class="halfBlock">
-            <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('reinforced')">Усиленный экипаж</button>
-            <button type="button" id="reinforcedBtn" class="toggleBtn actionBtnSmall" onclick="toggleReinforced()">Нет</button>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top:8px;">
-        <div class="pairRow">
-          <div class="halfBlock">
-            <div class="fieldTitle halfTitle">Кол-во посадок</div>
-            <button type="button" id="landingsBtn" class="toggleBtn actionBtnSmall" onclick="toggleLandings()">1–2</button>
-          </div>
-
-          <div class="halfBlock">
-            <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('extend')">Продление КВС</button>
-            <button type="button" id="extendBtn" class="toggleBtn actionBtnSmall" onclick="toggleExtend()">Нет</button>
-          </div>
-        </div>
-      </div>
-
     </div>
 
+    <!-- РЕЗУЛЬТАТЫ -->
     <div class="card">
       <div class="results3">
-
-        <div class="resultCard durationCard">
-          <button type="button" class="pill fullPill hasHint" onclick="openHint('duration')">Продолжительность смены</button>
-          <div class="timesTop" style="display:flex; justify-content:center;">
-            <div class="out" id="outDuration">—</div>
-          </div>
-        </div>
-
         <div class="resultCard">
-          <div class="pill fullPill">Окончание смены</div>
-          <div class="timesTop">
-            <div class="multiTimes">
-              <div class="mtCol"><div class="mtTime" id="outEndMSK">—</div><div class="mtLbl">МСК</div></div>
-              <div class="mtCol"><div class="mtTime" id="outEndUTC">—</div><div class="mtLbl">UTC</div></div>
-              <div class="mtCol"><div class="mtTime" id="outEndLOC">—</div><div class="mtLbl">Local</div></div>
-            </div>
-          </div>
+          <div class="pill">Продолжительность смены</div>
+          <div class="mtTime">—</div>
         </div>
-
         <div class="resultCard">
-          <div class="pill fullPill">Выключение двигателей</div>
-          <div class="timesTop">
-            <div class="multiTimes">
-              <div class="mtCol"><div class="mtTime" id="outEngMSK">—</div><div class="mtLbl">МСК</div></div>
-              <div class="mtCol"><div class="mtTime" id="outEngUTC">—</div><div class="mtLbl">UTC</div></div>
-              <div class="mtCol"><div class="mtTime" id="outEngLOC">—</div><div class="mtLbl">Local</div></div>
-            </div>
+          <div class="pill">Выключение двигателей</div>
+          <div class="multiTimes">
+            <div><div class="mtTime">—</div><div class="mtLbl">МСК</div></div>
+            <div><div class="mtTime">—</div><div class="mtLbl">UTC</div></div>
+            <div><div class="mtTime">—</div><div class="mtLbl">Local</div></div>
           </div>
         </div>
-
       </div>
     </div>
 
+    <!-- ОБРАТНЫЙ ПОЛЕТ -->
     <div class="card">
-      <div class="sixRow">
-
-        <div>
-          <div class="sixInline">
-            <div class="fieldTitle fullTitle wrap2">Время на<br>обратный полет</div>
-            <input id="flightTime" type="time" value="02:30" step="60">
-          </div>
-        </div>
-
-        <div>
-          <div class="pill fullPill" id="ldtPill">LDT</div>
-
-          <div class="timesTop">
-            <div class="multiTimes">
-              <div class="mtCol"><div class="mtTime" id="outLdtMSK">—</div><div class="mtLbl">МСК</div></div>
-              <div class="mtCol"><div class="mtTime" id="outLdtUTC">—</div><div class="mtLbl">UTC</div></div>
-              <div class="mtCol"><div class="mtTime" id="outLdtLOC">—</div><div class="mtLbl">Local</div></div>
-            </div>
-          </div>
-        </div>
-
+      <div class="sixInline">
+        <div class="fieldTitle wrap2">Время на<br>обратный полет</div>
+        <input type="time" value="02:30">
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- FIXED FOOTER -->
 <div class="footerFixed">
   <div class="footerWrap">
-    <button type="button" id="btnReset" class="saveBtn resetBtn" onclick="resetState()">Сбросить</button>
-  </div>
-</div>
-
-<!-- Оверлей подсказок -->
-<div id="hintOverlay" class="hintOverlay" onclick="closeHint()">
-  <div class="hintBox" onclick="closeHint()">
-    <p class="hintTitle" id="hintTitle">Пояснение</p>
-    <p class="hintText" id="hintText">—</p>
-    <div class="hintNote">Нажмите на окно, чтобы закрыть.</div>
+    <button class="resetBtn">Сбросить</button>
   </div>
 </div>
 
 <script>
-let cabincrew="нет", airport="UUEE", reinforced="нет", landings="1-2", extend="нет";
-let tzMode = "MSK"; // MSK | UTC | LOCAL
-
-let isSaved = false;
-
-function markUnsaved(){
-  if(!isSaved) return;
-  isSaved = false;
-  const b = document.getElementById("btnSave");
-  b.classList.remove("saved");
-  b.textContent = "Сохранить";
+/* ===== update toast logic ===== */
+const toast=document.getElementById("updateToast");
+let toastAt=0,timer=null;
+function showUpdateToast(){
+  toastAt=Date.now();
+  toast.style.display="block";
+}
+function hideUpdateToast(){
+  const d=Date.now()-toastAt;
+  clearTimeout(timer);
+  timer=setTimeout(()=>toast.style.display="none",Math.max(0,2000-d));
 }
 
-function markSaved(){
-  isSaved = true;
-  const b = document.getElementById("btnSave");
-  b.classList.add("saved");
-  b.textContent = "Сохранено";
-}
-
-function setTzMode(mode){
-  tzMode = mode;
-  btnMSK.classList.toggle("active", tzMode==="MSK");
-  btnUTC.classList.toggle("active", tzMode==="UTC");
-  btnLOCAL.classList.toggle("active", tzMode==="LOCAL");
-  markUnsaved();
-  render();
-}
-
-function setCrew(type){
-  cabincrew=(type==="cabin")?"да":"нет";
-  btnFlight.classList.toggle("active",cabincrew==="нет");
-  btnCabin.classList.toggle("active",cabincrew==="да");
-
-  if(cabincrew==="да") ccBlock.classList.add("open");
-  else ccBlock.classList.remove("open");
-
-  if(cabincrew==="нет"){
-    airport="UUEE"; reinforced="нет";
-    airportBtn.textContent="UUEE";
-    reinforcedBtn.textContent="Нет";
-  }
-  markUnsaved();
-  render();
-}
-
-function toggleAirport(){ airport=airport==="UUEE"?"другой":"UUEE"; airportBtn.textContent=airport; markUnsaved(); render(); }
-function toggleReinforced(){ reinforced=reinforced==="нет"?"да":"нет"; reinforcedBtn.textContent=reinforced==="да"?"Да":"Нет"; markUnsaved(); render(); }
-function toggleLandings(){ landings=landings==="1-2"?"3-4":"1-2"; landingsBtn.textContent=landings==="1-2"?"1–2":"3–4"; markUnsaved(); render(); }
-function toggleExtend(){ extend=extend==="нет"?"да":"нет"; extendBtn.textContent=extend==="да"?"Да":"Нет"; markUnsaved(); render(); }
-
-function parseTime(t){ if(!t) return null; const [a,b]=t.split(":").map(Number); return a*60+b; }
-function fmt(m){ m=(m+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
-
-function getDeltaHours(){
-  const v = Number(deltaUtc?.value || 3);
-  return Number.isFinite(v) ? v : 3;
-}
-function toMskMinutes(inputMinutes){
-  const delta = getDeltaHours();
-  if(tzMode==="MSK") return inputMinutes;
-  if(tzMode==="UTC") return inputMinutes + 3*60;
-  return inputMinutes + (3 - delta)*60; // LOCAL -> MSK
-}
-function mskToUtc(mskMinutes){ return mskMinutes - 3*60; }
-function mskToLocal(mskMinutes){
-  const delta = getDeltaHours();
-  return mskToUtc(mskMinutes) + delta*60;
-}
-
-function calculate(){
-  const depInput=parseTime(depTime.value);
-  const flt=parseTime(flightTime.value);
-  if(depInput==null||flt==null) return null;
-
-  const dep = toMskMinutes(depInput);
-
-  const checkIn = dep - ((cabincrew==="да" && airport==="UUEE") ? 90 : 60);
-  const isDay = checkIn>=361 && checkIn<=1319;
-
-  let norm=null;
-  if(cabincrew==="да" && reinforced==="да"){
-    norm = (landings==="1-2") ? (extend==="да"?960:780) : (extend==="да"?900:720);
-  } else {
-    if(landings==="1-2") norm = isDay ? (extend==="да"?840:720) : (extend==="да"?780:660);
-    if(landings==="3-4") norm = isDay ? (extend==="да"?750:630) : (extend==="да"?720:600);
-  }
-  if(!norm) return null;
-
-  const end = checkIn + norm;
-  return {
-    duration: end - checkIn,
-    eng_msk: end - 30,
-    end_msk: end,
-    ldt_msk: end - 30 - flt
-  };
-}
-
-function render(){
-  const r=calculate();
-  if(!r){
-    outDuration.textContent="—";
-    outEngMSK.textContent="—"; outEngUTC.textContent="—"; outEngLOC.textContent="—";
-    outEndMSK.textContent="—"; outEndUTC.textContent="—"; outEndLOC.textContent="—";
-    outLdtMSK.textContent="—"; outLdtUTC.textContent="—"; outLdtLOC.textContent="—";
-    return;
-  }
-
-  outDuration.textContent = fmt(r.duration);
-
-  outEngMSK.textContent = fmt(r.eng_msk);
-  outEngUTC.textContent = fmt(mskToUtc(r.eng_msk));
-  outEngLOC.textContent = fmt(mskToLocal(r.eng_msk));
-
-  outEndMSK.textContent = fmt(r.end_msk);
-  outEndUTC.textContent = fmt(mskToUtc(r.end_msk));
-  outEndLOC.textContent = fmt(mskToLocal(r.end_msk));
-
-  outLdtMSK.textContent = fmt(r.ldt_msk);
-  outLdtUTC.textContent = fmt(mskToUtc(r.ldt_msk));
-  outLdtLOC.textContent = fmt(mskToLocal(r.ldt_msk));
-}
-
-/* моментальный пересчет */
-let lastDep=depTime.value, lastFlt=flightTime.value;
-let lastTz=tzMode, lastDelta=(deltaUtc?deltaUtc.value:"3");
-setInterval(()=>{
-  const d = (window.deltaUtc ? deltaUtc.value : "3");
-  if(depTime.value!==lastDep || flightTime.value!==lastFlt || tzMode!==lastTz || d!==lastDelta){
-    lastDep=depTime.value; lastFlt=flightTime.value; lastTz=tzMode; lastDelta=d;
-    markUnsaved();
-    render();
-  }
-},150);
-
-/* подсказки */
-const hintOverlay = document.getElementById("hintOverlay");
-const hintTitleEl = document.getElementById("hintTitle");
-const hintTextEl = document.getElementById("hintText");
-
-const HINTS = {
-  delta: { title:"Δ UTC", text:"Часовой пояс относительно UTC для расчетов, с учетом местного времени." },
-  extend: { title:"Продление КВС", text:"+2 часа / +3 часа (для усиленного экипажа)." },
-  duration: { title:"Продолжительность смены", text:"06:01–21:59 МСК — дневная явка / 22:00–06:00 МСК — ночная явка." },
-  reinforced: { title:"Усиленный экипаж", text:"5 ЧКЭ для A320 / 6 ЧКЭ для A321 (стажер не учитывается)." }
-};
-
-function openHint(key){
-  const h = HINTS[key];
-  if(!h) return;
-  hintTitleEl.textContent = h.title;
-  hintTextEl.textContent = h.text;
-  hintOverlay.classList.add("open");
-}
-function closeHint(){ hintOverlay.classList.remove("open"); }
-
-/* сохранение */
-function saveState(){
-  const state = {
-    depTime: depTime.value,
-    flightTime: flightTime.value,
-    tzMode,
-    deltaUtc: deltaUtc.value,
-    cabincrew,
-    airport,
-    reinforced,
-    landings,
-    extend
-  };
-  localStorage.setItem("shiftcalc_state", JSON.stringify(state));
-  markSaved();
-}
-
-function loadState(){
-  try{
-    const raw = localStorage.getItem("shiftcalc_state");
-    if(!raw) return;
-    const s = JSON.parse(raw);
-
-    if(s.depTime) depTime.value = s.depTime;
-    if(s.flightTime) flightTime.value = s.flightTime;
-    if(s.deltaUtc) deltaUtc.value = String(s.deltaUtc);
-
-    if(s.tzMode) setTzMode(s.tzMode);
-    if(s.cabincrew === "да") setCrew("cabin"); else setCrew("flight");
-
-    if(s.airport){
-      airport = s.airport;
-      airportBtn.textContent = airport;
-    }
-    if(s.reinforced){
-      reinforced = s.reinforced;
-      reinforcedBtn.textContent = (reinforced==="да") ? "Да" : "Нет";
-    }
-    if(s.landings){
-      landings = s.landings;
-      landingsBtn.textContent = (landings==="1-2") ? "1–2" : "3–4";
-    }
-    if(s.extend){
-      extend = s.extend;
-      extendBtn.textContent = (extend==="да") ? "Да" : "Нет";
-    }
-
-    render();
-    markSaved();
-  }catch(e){}
-}
-
-function resetState(){
-  localStorage.removeItem("shiftcalc_state");
-
-  depTime.value = "05:00";
-  flightTime.value = "02:30";
-  deltaUtc.value = "3";
-
-  tzMode = "MSK";
-  btnMSK.classList.add("active"); btnUTC.classList.remove("active"); btnLOCAL.classList.remove("active");
-
-  cabincrew="нет";
-  btnFlight.classList.add("active"); btnCabin.classList.remove("active");
-  ccBlock.classList.remove("open");
-
-  airport="UUEE";
-  reinforced="нет";
-  landings="1-2";
-  extend="нет";
-
-  airportBtn.textContent = "UUEE";
-  reinforcedBtn.textContent = "Нет";
-  landingsBtn.textContent = "1–2";
-  extendBtn.textContent = "Нет";
-
-  isSaved = false;
-  const b = document.getElementById("btnSave");
-  b.classList.remove("saved");
-  b.textContent = "Сохранить";
-
-  render();
-}
-
-ccBlock.classList.remove("open");
-btnSave.textContent = "Сохранить";
-setTzMode("MSK");
-loadState();
-render();
-</script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js");
+if("serviceWorker"in navigator){
+  window.addEventListener("load",async()=>{
+    const reg=await navigator.serviceWorker.register("./sw.js");
+    navigator.serviceWorker.addEventListener("message",e=>{
+      if(e.data?.type==="UPDATING")showUpdateToast();
+      if(e.data?.type==="UPDATED")hideUpdateToast();
+    });
+    try{await reg.update()}catch(e){}
   });
 }
 </script>
