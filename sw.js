@@ -1,5 +1,5 @@
 /* sw.js */
-const VERSION = "v1"; // ⬅️ меняйте (v12, v13...), когда хотите принудительно обновить кэш
+const VERSION = "v271"; // ⬅️ меняйте (v12, v13...), когда хотите принудительно обновить кэш
 const CACHE_NAME = `shiftcalc-${VERSION}`;
 
 // ⬇️ Убедитесь, что эти файлы реально существуют по этим путям в вашем репозитории
@@ -127,5 +127,6 @@ self.addEventListener("fetch", (event) => {
   // Остальные файлы (иконки, css, js, manifest...)
   event.respondWith(handleAsset(req, event));
 });
+
 
 
