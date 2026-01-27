@@ -44,30 +44,26 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   margin-bottom:10px;
 }
 
-/* заголовок: заливка как у активных кнопок МСК/UTC/Local */
 .headerCard{
   background:var(--accent);
   border-color:var(--accent);
   color:#fff;
 }
 
-/* ✅ ИЗМЕНЕНО: заголовок не по центру, а слева (внутри хедера — flex) */
+/* Хедер: заголовок по центру между левым краем и кнопкой */
 .headerBar{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
 }
-
-/* ✅ ИЗМЕНЕНО: заголовок смещен влево */
 h1{
   margin:0;
   font-size:20px;
-  text-align:left;
+  text-align:center; /* ✅ изменено */
   flex:1;
 }
 
-/* ✅ НОВОЕ: кнопка "Сохранить" на синей подложке */
 .saveBtn{
   border:1px solid rgba(255,255,255,0.65);
   background:rgba(255,255,255,0.16);
@@ -80,11 +76,14 @@ h1{
   display:flex;
   align-items:center;
 }
-.saveBtn:active{
-  transform:translateY(1px);
-}
-.saveBtn.saved{
-  background:rgba(255,255,255,0.28);
+.saveBtn:active{ transform:translateY(1px); }
+.saveBtn.saved{ background:rgba(255,255,255,0.28); }
+
+/* ✅ нижняя кнопка "Сбросить" — такая же, но на всю ширину */
+.resetBtn{
+  width:100%;
+  justify-content:center;
+  margin-top:10px;
 }
 
 input,button,select{
@@ -366,7 +365,6 @@ button.pill{
 <body>
 <div class="wrap">
 
-<!-- ✅ ИЗМЕНЕНО: хедер теперь с кнопкой "Сохранить" справа -->
 <div class="card headerCard">
   <div class="headerBar">
     <h1>Расчет смены</h1>
@@ -440,7 +438,6 @@ button.pill{
 
 </div>
 
-<!-- Результаты -->
 <div class="card">
   <div class="results3">
 
@@ -451,7 +448,6 @@ button.pill{
       </div>
     </div>
 
-    <!-- ✅ Поменяны местами эти два блока: сначала Окончание смены, потом Выключение двигателей -->
     <div class="resultCard">
       <div class="pill fullPill">Окончание смены</div>
       <div class="timesTop">
@@ -477,7 +473,6 @@ button.pill{
   </div>
 </div>
 
-<!-- 6) + LDT -->
 <div class="card">
   <div class="sixRow">
 
@@ -503,9 +498,11 @@ button.pill{
   </div>
 </div>
 
+<!-- ✅ НОВОЕ: кнопка Сбросить в самом низу -->
+<button type="button" id="btnReset" class="saveBtn resetBtn" onclick="resetState()">Сбросить</button>
+
 </div>
 
-<!-- Оверлей подсказок -->
 <div id="hintOverlay" class="hintOverlay" onclick="closeHint()">
   <div class="hintBox" onclick="closeHint()">
     <p class="hintTitle" id="hintTitle">Пояснение</p>
@@ -550,11 +547,6 @@ function toggleExtend(){ extend=extend==="нет"?"да":"нет"; extendBtn.tex
 function parseTime(t){ if(!t) return null; const [a,b]=t.split(":").map(Number); return a*60+b; }
 function fmt(m){ m=(m+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
 
-/* Конвертация:
-   База расчетов — МСК.
-   MSK = UTC + 3
-   Local = UTC + Δ (Δ 1..12)
-*/
 function getDeltaHours(){
   const v = Number(deltaUtc?.value || 3);
   return Number.isFinite(v) ? v : 3;
@@ -624,7 +616,6 @@ function render(){
   outLdtLOC.textContent = fmt(mskToLocal(r.ldt_msk));
 }
 
-/* моментальный пересчет */
 let lastDep=depTime.value, lastFlt=flightTime.value;
 let lastTz=tzMode, lastDelta=(deltaUtc?deltaUtc.value:"3");
 setInterval(()=>{
@@ -635,7 +626,6 @@ setInterval(()=>{
   }
 },150);
 
-/* ===== Подсказки ===== */
 const hintOverlay = document.getElementById("hintOverlay");
 const hintTitleEl = document.getElementById("hintTitle");
 const hintTextEl = document.getElementById("hintText");
@@ -656,7 +646,6 @@ function openHint(key){
 }
 function closeHint(){ hintOverlay.classList.remove("open"); }
 
-/* ✅ НОВОЕ: сохранение/загрузка состояния (не влияет на расчеты, только запоминает текущие значения) */
 function saveState(){
   const state = {
     depTime: depTime.value,
@@ -690,7 +679,6 @@ function loadState(){
     if(s.flightTime) flightTime.value = s.flightTime;
     if(s.deltaUtc) deltaUtc.value = String(s.deltaUtc);
 
-    // восстановим режимы/кнопки
     if(s.tzMode) setTzMode(s.tzMode);
     if(s.cabincrew === "да") setCrew("cabin"); else setCrew("flight");
 
@@ -715,14 +703,36 @@ function loadState(){
   }catch(e){}
 }
 
-/* старт */
+/* ✅ НОВОЕ: сброс к исходному состоянию */
+function resetState(){
+  localStorage.removeItem("shiftcalc_state");
+
+  depTime.value = "05:00";
+  flightTime.value = "02:30";
+  deltaUtc.value = "3";
+
+  setTzMode("MSK");
+  setCrew("flight");
+
+  airport = "UUEE";
+  reinforced = "нет";
+  landings = "1-2";
+  extend = "нет";
+
+  airportBtn.textContent = "UUEE";
+  reinforcedBtn.textContent = "Нет";
+  landingsBtn.textContent = "1–2";
+  extendBtn.textContent = "Нет";
+
+  render();
+}
+
 ccBlock.classList.remove("open");
 setTzMode("MSK");
 loadState();
 render();
 </script>
 
-<!-- Service Worker регистрация (если есть sw.js) -->
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
