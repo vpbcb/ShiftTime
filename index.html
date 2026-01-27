@@ -30,8 +30,8 @@
   --hintFs:12.5px;
   --actionBtnHSmall:38px;
 
-  /* ✅ чуть уменьшили фикс. зоны, чтобы влезало больше без прокрутки */
-  --fixedHeaderH: 62px;
+  /* фиксированные зоны */
+  --fixedHeaderH: 60px;
   --fixedFooterH: 50px;
 }
 
@@ -52,11 +52,11 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   background:transparent;
 }
 
-/* ✅ чуть меньше отступы у фиксированных областей */
+/* ✅ уменьшили отступы у фиксированных областей */
 .headerWrap{
   max-width:720px;
   margin:auto;
-  padding:6px 14px;
+  padding:4px 14px;
 }
 .footerWrap{
   max-width:720px;
@@ -73,18 +73,18 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   overflow:auto;
 }
 
-/* ✅ чуть меньше внутренние отступы, чтобы больше помещалось */
-.wrap{ max-width:720px; margin:auto; padding:12px; }
+/* ✅ чуть меньше внутренние отступы */
+.wrap{ max-width:720px; margin:auto; padding:10px; }
 
 .card{
   background:#fff;
   border:1px solid var(--border);
   border-radius:12px;
-  padding:11px;          /* было 12 */
-  margin-bottom:9px;     /* было 10 */
+  padding:10px;          /* было 11/12 */
+  margin-bottom:8px;     /* было 9/10 */
 }
 
-/* верхний блок (минимальная высота, кнопку не трогаем) */
+/* верхний блок */
 .headerCard{
   background:var(--accent);
   border-color:var(--accent);
@@ -121,7 +121,7 @@ h1{
 .saveBtn:active{ transform:translateY(1px); }
 .saveBtn.saved{ background:rgba(255,255,255,0.28); }
 
-/* нижняя кнопка "Сбросить" — синяя, на всю ширину */
+/* нижняя кнопка "Сбросить" */
 .resetBtn{
   width:100%;
   justify-content:center;
@@ -194,6 +194,7 @@ button.fieldTitle{
   pointer-events:none;
 }
 
+/* ✅ немного компактнее сетка верхнего блока */
 .depGrid{
   display:grid;
   grid-template-columns: auto 1fr;
@@ -201,7 +202,7 @@ button.fieldTitle{
     "title title"
     "inputs tz"
     "delta delta";
-  gap:8px 10px;
+  gap:6px 10px;   /* было 8px 10px */
   align-items:center;
 }
 .depTitle{ grid-area:title; }
@@ -252,15 +253,16 @@ button.fieldTitle{
   display:flex;
   align-items:center;
   gap:8px;
-  padding-top:6px;
+  padding-top:4px;  /* было 6 */
 }
 
-.results3{ display:grid; gap:12px; }
+/* ✅ чуть меньше расстояние между карточками результатов */
+.results3{ display:grid; gap:9px; }
 
 .resultCard{
   border:1px solid var(--border);
   border-radius:12px;
-  padding:10px;
+  padding:9px;      /* было 10 */
   background:#fff;
   display:grid;
   grid-template-rows:42px auto;
@@ -289,7 +291,7 @@ button.pill{
   line-height:1.1;
 }
 
-.timesTop{ padding-top:8px; }
+.timesTop{ padding-top:6px; } /* было 8 */
 .out{ font-size:var(--resultTimeFs); font-weight:700; line-height:1.1; }
 
 .multiTimes{
@@ -330,7 +332,7 @@ button.pill{
   gap:10px;
 }
 .halfTitle{ width:100%; justify-self:stretch; display:flex; }
-.halfBlock{ display:grid; gap:10px; }
+.halfBlock{ display:grid; gap:9px; } /* было 10 */
 
 @media (max-width:639px){
   .results3{ grid-template-columns:1fr; }
@@ -352,11 +354,11 @@ button.pill{
   .resultCard .pill.fullPill{ width:100%; justify-self:stretch; }
 
   .resultCard.durationCard{
-    padding:8px 10px;
+    padding:8px 9px;
     grid-template-rows:34px auto;
   }
   .resultCard.durationCard .pill{ height:28px; }
-  .resultCard.durationCard .timesTop{ padding-top:5px; }
+  .resultCard.durationCard .timesTop{ padding-top:4px; }
 
   #ldtPill{
     width:100%;
@@ -452,15 +454,15 @@ button.pill{
         </div>
       </div>
 
-      <div style="margin-top:12px;">
+      <div style="margin-top:8px;">
         <div class="fieldTitle fullTitle">Расчет для</div>
-        <div class="modeButtons" style="margin-top:10px;">
+        <div class="modeButtons" style="margin-top:8px;">
           <button type="button" id="btnFlight" class="modeBtn actionBtnSmall active" onclick="setCrew('flight')">Flight Crew</button>
           <button type="button" id="btnCabin" class="modeBtn actionBtnSmall" onclick="setCrew('cabin')">Cabin Crew</button>
         </div>
       </div>
 
-      <div id="ccBlock" style="margin-top:12px;">
+      <div id="ccBlock" style="margin-top:8px;">
         <div class="pairRow">
           <div class="halfBlock">
             <div class="fieldTitle halfTitle">Аэропорт явки</div>
@@ -474,7 +476,7 @@ button.pill{
         </div>
       </div>
 
-      <div style="margin-top:12px;">
+      <div style="margin-top:8px;">
         <div class="pairRow">
           <div class="halfBlock">
             <div class="fieldTitle halfTitle">Кол-во посадок</div>
@@ -573,7 +575,6 @@ button.pill{
 let cabincrew="нет", airport="UUEE", reinforced="нет", landings="1-2", extend="нет";
 let tzMode = "MSK"; // MSK | UTC | LOCAL
 
-/* ✅ состояние “сохранено/не сохранено” */
 let isSaved = false;
 
 function markUnsaved(){
@@ -603,227 +604,4 @@ function setTzMode(mode){
 function setCrew(type){
   cabincrew=(type==="cabin")?"да":"нет";
   btnFlight.classList.toggle("active",cabincrew==="нет");
-  btnCabin.classList.toggle("active",cabincrew==="да");
-
-  if(cabincrew==="да") ccBlock.classList.add("open");
-  else ccBlock.classList.remove("open");
-
-  if(cabincrew==="нет"){
-    airport="UUEE"; reinforced="нет";
-    airportBtn.textContent="UUEE";
-    reinforcedBtn.textContent="Нет";
-  }
-  markUnsaved();
-  render();
-}
-
-function toggleAirport(){ airport=airport==="UUEE"?"другой":"UUEE"; airportBtn.textContent=airport; markUnsaved(); render(); }
-function toggleReinforced(){ reinforced=reinforced==="нет"?"да":"нет"; reinforcedBtn.textContent=reinforced==="да"?"Да":"Нет"; markUnsaved(); render(); }
-function toggleLandings(){ landings=landings==="1-2"?"3-4":"1-2"; landingsBtn.textContent=landings==="1-2"?"1–2":"3–4"; markUnsaved(); render(); }
-function toggleExtend(){ extend=extend==="нет"?"да":"нет"; extendBtn.textContent=extend==="да"?"Да":"Нет"; markUnsaved(); render(); }
-
-function parseTime(t){ if(!t) return null; const [a,b]=t.split(":").map(Number); return a*60+b; }
-function fmt(m){ m=(m+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
-
-function getDeltaHours(){
-  const v = Number(deltaUtc?.value || 3);
-  return Number.isFinite(v) ? v : 3;
-}
-function toMskMinutes(inputMinutes){
-  const delta = getDeltaHours();
-  if(tzMode==="MSK") return inputMinutes;
-  if(tzMode==="UTC") return inputMinutes + 3*60;
-  return inputMinutes + (3 - delta)*60; // LOCAL -> MSK
-}
-function mskToUtc(mskMinutes){ return mskMinutes - 3*60; }
-function mskToLocal(mskMinutes){
-  const delta = getDeltaHours();
-  return mskToUtc(mskMinutes) + delta*60;
-}
-
-function calculate(){
-  const depInput=parseTime(depTime.value);
-  const flt=parseTime(flightTime.value);
-  if(depInput==null||flt==null) return null;
-
-  const dep = toMskMinutes(depInput);
-
-  const checkIn = dep - ((cabincrew==="да" && airport==="UUEE") ? 90 : 60);
-  const isDay = checkIn>=361 && checkIn<=1319;
-
-  let norm=null;
-  if(cabincrew==="да" && reinforced==="да"){
-    norm = (landings==="1-2") ? (extend==="да"?960:780) : (extend==="да"?900:720);
-  } else {
-    if(landings==="1-2") norm = isDay ? (extend==="да"?840:720) : (extend==="да"?780:660);
-    if(landings==="3-4") norm = isDay ? (extend==="да"?750:630) : (extend==="да"?720:600);
-  }
-  if(!norm) return null;
-
-  const end = checkIn + norm;
-  return {
-    duration: end - checkIn,
-    eng_msk: end - 30,
-    end_msk: end,
-    ldt_msk: end - 30 - flt
-  };
-}
-
-function render(){
-  const r=calculate();
-  if(!r){
-    outDuration.textContent="—";
-    outEngMSK.textContent="—"; outEngUTC.textContent="—"; outEngLOC.textContent="—";
-    outEndMSK.textContent="—"; outEndUTC.textContent="—"; outEndLOC.textContent="—";
-    outLdtMSK.textContent="—"; outLdtUTC.textContent="—"; outLdtLOC.textContent="—";
-    return;
-  }
-
-  outDuration.textContent = fmt(r.duration);
-
-  outEngMSK.textContent = fmt(r.eng_msk);
-  outEngUTC.textContent = fmt(mskToUtc(r.eng_msk));
-  outEngLOC.textContent = fmt(mskToLocal(r.eng_msk));
-
-  outEndMSK.textContent = fmt(r.end_msk);
-  outEndUTC.textContent = fmt(mskToUtc(r.end_msk));
-  outEndLOC.textContent = fmt(mskToLocal(r.end_msk));
-
-  outLdtMSK.textContent = fmt(r.ldt_msk);
-  outLdtUTC.textContent = fmt(mskToUtc(r.ldt_msk));
-  outLdtLOC.textContent = fmt(mskToLocal(r.ldt_msk));
-}
-
-/* моментальный пересчет */
-let lastDep=depTime.value, lastFlt=flightTime.value;
-let lastTz=tzMode, lastDelta=(deltaUtc?deltaUtc.value:"3");
-setInterval(()=>{
-  const d = (window.deltaUtc ? deltaUtc.value : "3");
-  if(depTime.value!==lastDep || flightTime.value!==lastFlt || tzMode!==lastTz || d!==lastDelta){
-    lastDep=depTime.value; lastFlt=flightTime.value; lastTz=tzMode; lastDelta=d;
-    markUnsaved();
-    render();
-  }
-},150);
-
-const hintOverlay = document.getElementById("hintOverlay");
-const hintTitleEl = document.getElementById("hintTitle");
-const hintTextEl = document.getElementById("hintText");
-
-const HINTS = {
-  delta: { title:"Δ UTC", text:"Часовой пояс относительно UTC для расчетов, с учетом местного времени." },
-  extend: { title:"Продление КВС", text:"+2 часа / +3 часа (для усиленного экипажа)." },
-  duration: { title:"Продолжительность смены", text:"06:01–21:59 МСК — дневная явка / 22:00–06:00 МСК — ночная явка." },
-  reinforced: { title:"Усиленный экипаж", text:"5 ЧКЭ для A320 / 6 ЧКЭ для A321 (стажер не учитывается)." }
-};
-
-function openHint(key){
-  const h = HINTS[key];
-  if(!h) return;
-  hintTitleEl.textContent = h.title;
-  hintTextEl.textContent = h.text;
-  hintOverlay.classList.add("open");
-}
-function closeHint(){ hintOverlay.classList.remove("open"); }
-
-function saveState(){
-  const state = {
-    depTime: depTime.value,
-    flightTime: flightTime.value,
-    tzMode,
-    deltaUtc: deltaUtc.value,
-    cabincrew,
-    airport,
-    reinforced,
-    landings,
-    extend
-  };
-  localStorage.setItem("shiftcalc_state", JSON.stringify(state));
-  markSaved(); /* ✅ теперь остается “Сохранено” */
-}
-
-function loadState(){
-  try{
-    const raw = localStorage.getItem("shiftcalc_state");
-    if(!raw) return;
-    const s = JSON.parse(raw);
-
-    if(s.depTime) depTime.value = s.depTime;
-    if(s.flightTime) flightTime.value = s.flightTime;
-    if(s.deltaUtc) deltaUtc.value = String(s.deltaUtc);
-
-    if(s.tzMode) setTzMode(s.tzMode);
-    if(s.cabincrew === "да") setCrew("cabin"); else setCrew("flight");
-
-    if(s.airport){
-      airport = s.airport;
-      airportBtn.textContent = airport;
-    }
-    if(s.reinforced){
-      reinforced = s.reinforced;
-      reinforcedBtn.textContent = (reinforced==="да") ? "Да" : "Нет";
-    }
-    if(s.landings){
-      landings = s.landings;
-      landingsBtn.textContent = (landings==="1-2") ? "1–2" : "3–4";
-    }
-    if(s.extend){
-      extend = s.extend;
-      extendBtn.textContent = (extend==="да") ? "Да" : "Нет";
-    }
-
-    render();
-    markSaved(); /* ✅ если загрузили сохраненное — тоже “Сохранено” */
-  }catch(e){}
-}
-
-function resetState(){
-  localStorage.removeItem("shiftcalc_state");
-
-  depTime.value = "05:00";
-  flightTime.value = "02:30";
-  deltaUtc.value = "3";
-
-  // напрямую, без markUnsaved (и сразу ставим "Сохранить")
-  tzMode = "MSK";
-  btnMSK.classList.add("active"); btnUTC.classList.remove("active"); btnLOCAL.classList.remove("active");
-
-  cabincrew="нет";
-  btnFlight.classList.add("active"); btnCabin.classList.remove("active");
-  ccBlock.classList.remove("open");
-
-  airport="UUEE";
-  reinforced="нет";
-  landings="1-2";
-  extend="нет";
-
-  airportBtn.textContent = "UUEE";
-  reinforcedBtn.textContent = "Нет";
-  landingsBtn.textContent = "1–2";
-  extendBtn.textContent = "Нет";
-
-  isSaved = false;
-  const b = document.getElementById("btnSave");
-  b.classList.remove("saved");
-  b.textContent = "Сохранить";
-
-  render();
-}
-
-ccBlock.classList.remove("open");
-btnSave.textContent = "Сохранить";
-setTzMode("MSK");
-loadState();
-render();
-</script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js");
-  });
-}
-</script>
-
-</body>
-</html>
+  btnCabin.classList.toggle("active",cabincrew==="д
