@@ -52,7 +52,6 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   background:transparent;
 }
 
-/* ✅ уменьшили отступы у фиксированных областей */
 .headerWrap{
   max-width:720px;
   margin:auto;
@@ -64,7 +63,7 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   padding:6px 14px;
 }
 
-/* скроллится только эта зона (в portrait) */
+/* скроллится (в portrait) */
 .scrollArea{
   position:fixed;
   top:var(--fixedHeaderH);
@@ -73,7 +72,6 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   overflow:auto;
 }
 
-/* ✅ чуть меньше внутренние отступы */
 .wrap{ max-width:720px; margin:auto; padding:10px; }
 
 .card{
@@ -194,7 +192,7 @@ button.fieldTitle{
   pointer-events:none;
 }
 
-/* ✅ немного компактнее сетка верхнего блока */
+/* верхняя сетка */
 .depGrid{
   display:grid;
   grid-template-columns: auto 1fr;
@@ -256,7 +254,7 @@ button.fieldTitle{
   padding-top:4px;
 }
 
-/* ✅ чуть меньше расстояние между карточками результатов */
+/* результаты */
 .results3{ display:grid; gap:9px; }
 
 .resultCard{
@@ -334,7 +332,7 @@ button.pill{
 .halfTitle{ width:100%; justify-self:stretch; display:flex; }
 .halfBlock{ display:grid; gap:9px; }
 
-/* ✅ LDT: во всех ориентациях — по центру белого блока, серая подложка на всю ширину */
+/* ✅ LDT всегда по центру и на всю ширину */
 #ldtPill{
   width:100%;
   justify-self:stretch;
@@ -342,7 +340,7 @@ button.pill{
   justify-content:center;
 }
 
-/* portrait-правила */
+/* portrait */
 @media (max-width:639px){
   .results3{ grid-template-columns:1fr; }
   .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
@@ -370,6 +368,7 @@ button.pill{
   .resultCard.durationCard .timesTop{ padding-top:4px; }
 }
 
+/* подсказки */
 .hintOverlay{
   position:fixed;
   inset:0;
@@ -409,11 +408,11 @@ button.pill{
 }
 
 /* ============================================================
-   ✅ ТОЛЬКО ДЛЯ ГОРИЗОНТАЛЬНОЙ ОРИЕНТАЦИИ (landscape)
-   - внешняя scrollArea НЕ скроллится
-   - скролл внутри колонок (inputsCard / rightCol)
-   - rightCol по высоте как inputsCard на старте (фиксируется JS)
-   - заголовки результатов по ширине белого блока
+   ✅ LANDSCAPE: СКРОЛЛ ПОЛНОСТЬЮ УБРАН
+   - экран фиксирован между header/footer
+   - оба блока фиксированной высоты (JS)
+   - overflow:hidden везде (никаких прокруток)
+   - заголовки результатов на всю ширину белого блока
    ============================================================ */
 @media (min-width:640px) and (orientation:landscape){
 
@@ -426,43 +425,37 @@ button.pill{
 
   .headerCard{ width:100%; }
 
-  /* внешний скролл выключаем */
+  /* ✅ никаких скроллов вообще */
   .scrollArea{ overflow:hidden; }
+  body{ overflow:hidden; }
 
-  /* две колонки, НО без растягивания красного на всю высоту */
   .wrap{
     max-width:none;
     padding:10px 14px;
     display:grid;
     grid-template-columns: 1fr 1fr;
     gap:10px;
-    align-items:start;
+    height:100%;
     overflow:hidden;
-
-    /* ✅ ограничиваем область между фикс. хедером и футером */
-    max-height: calc(100vh - var(--fixedHeaderH) - var(--fixedFooterH));
+    align-items:start;
   }
 
-  /* ✅ красный: высота по контенту, но если вдруг станет выше — скролл внутри */
   #inputsCard{
     grid-column:1;
     grid-row:1;
-    height:auto;
-
+    overflow:hidden;
   }
 
-  /* правый скроллится сам, высота задаётся JS */
   #rightCol{
     grid-column:2;
     grid-row:1;
-    overflow:auto;
-    -webkit-overflow-scrolling:touch;
+    overflow:hidden;
   }
 
   #rightCol > .card{ margin-bottom:8px; }
   #rightCol > .card:last-child{ margin-bottom:0; }
 
-  /* ✅ в landscape заголовки результатов на всю ширину белого блока */
+  /* заголовки результатов на всю ширину */
   #resultsCard .pill.fullPill,
   #resultsCard button.pill.fullPill,
   #afterResultsCard .pill.fullPill,
@@ -521,11 +514,11 @@ button.pill{
   </div>
 </div>
 
-<!-- SCROLLABLE CONTENT -->
+<!-- CONTENT -->
 <div class="scrollArea">
   <div class="wrap">
 
-    <!-- ЛЕВЫЙ (красный) -->
+    <!-- LEFT -->
     <div class="card" id="inputsCard">
 
       <div class="depGrid">
@@ -592,7 +585,7 @@ button.pill{
 
     </div>
 
-    <!-- ПРАВЫЙ (зелёный) — контейнер -->
+    <!-- RIGHT -->
     <div id="rightCol">
       <div class="card" id="resultsCard">
         <div class="results3">
@@ -687,7 +680,6 @@ function markUnsaved(){
   b.classList.remove("saved");
   b.textContent = "Сохранить";
 }
-
 function markSaved(){
   isSaved = true;
   const b = document.getElementById("btnSave");
@@ -719,7 +711,6 @@ function setCrew(type){
   }
   markUnsaved();
   render();
-  // ✅ не меняем фиксированную высоту rightCol при Cabin Crew
 }
 
 function toggleAirport(){ airport=airport==="UUEE"?"другой":"UUEE"; airportBtn.textContent=airport; markUnsaved(); render(); }
@@ -915,9 +906,8 @@ function resetState(){
 
   render();
 
-  // ✅ при сбросе — пере-зафиксируем высоту правой колонки в landscape
-  rightLockedH = null;
-  lockRightHeight();
+  lockedH = null;
+  lockBothHeights();
 }
 
 ccBlock.classList.remove("open");
@@ -925,6 +915,52 @@ btnSave.textContent = "Сохранить";
 setTzMode("MSK");
 loadState();
 render();
+
+/* ============================================================
+   ✅ LANDSCAPE: фиксируем высоту обоих блоков и УБИРАЕМ СКРОЛЛЫ
+   ============================================================ */
+let lockedH = null;
+
+function isLandscapeNow(){
+  return window.matchMedia("(orientation: landscape)").matches && window.innerWidth >= 640;
+}
+
+function lockBothHeights(){
+  const left = document.getElementById("inputsCard");
+  const right = document.getElementById("rightCol");
+  if(!left || !right) return;
+
+  if(!isLandscapeNow()){
+    left.style.height = "";
+    right.style.height = "";
+    lockedH = null;
+    return;
+  }
+
+  if(lockedH == null){
+    lockedH = left.offsetHeight;
+  }
+
+  left.style.height = lockedH + "px";
+  right.style.height = lockedH + "px";
+}
+
+window.addEventListener("load", () => {
+  lockedH = null;
+  lockBothHeights();
+});
+window.addEventListener("orientationchange", () => {
+  lockedH = null;
+  setTimeout(lockBothHeights, 80);
+});
+window.addEventListener("resize", () => {
+  if(!isLandscapeNow()){
+    lockedH = null;
+    lockBothHeights();
+    return;
+  }
+  if(lockedH == null) lockBothHeights();
+});
 
 /* ============================================================
    Toast по центру экрана + минимум 3 секунды
@@ -942,56 +978,12 @@ function showUpdateToast(){
 function hideUpdateToast(){
   if(!updateToast) return;
   const elapsed = Date.now() - toastShownAt;
-  const remain = Math.max(0, 3000 - elapsed); // ✅ минимум 3 секунды
+  const remain = Math.max(0, 3000 - elapsed);
   clearTimeout(toastHideTimer);
   toastHideTimer = setTimeout(() => {
     updateToast.style.display = "none";
   }, remain);
 }
-
-/* ============================================================
-   ✅ LANDSCAPE: фиксируем высоту правой колонки = высоте inputsCard
-   (фиксируется один раз при входе в landscape и НЕ меняется при Cabin Crew)
-   ============================================================ */
-let rightLockedH = null;
-
-function isLandscapeNow(){
-  return window.matchMedia("(orientation: landscape)").matches && window.innerWidth >= 640;
-}
-
-function lockRightHeight(){
-  const inputs = document.getElementById("inputsCard");
-  const right = document.getElementById("rightCol");
-  if(!inputs || !right) return;
-
-  if(!isLandscapeNow()){
-    right.style.height = "";
-    rightLockedH = null;
-    return;
-  }
-
-  if(rightLockedH == null){
-    rightLockedH = inputs.offsetHeight;
-  }
-  right.style.height = rightLockedH + "px";
-}
-
-window.addEventListener("load", () => {
-  rightLockedH = null;
-  lockRightHeight();
-});
-window.addEventListener("orientationchange", () => {
-  rightLockedH = null;
-  setTimeout(lockRightHeight, 80);
-});
-window.addEventListener("resize", () => {
-  if(!isLandscapeNow()){
-    rightLockedH = null;
-    lockRightHeight();
-    return;
-  }
-  if(rightLockedH == null) lockRightHeight();
-});
 </script>
 
 <script>
