@@ -30,9 +30,9 @@
   --hintFs:12.5px;
   --actionBtnHSmall:38px;
 
-  /* фиксированные отступы для скролл-зоны (подогнаны под минимально комфортный хедер/футер) */
-  --fixedHeaderH: 70px;
-  --fixedFooterH: 54px;
+  /* ✅ чуть уменьшили фикс. зоны, чтобы влезало больше без прокрутки */
+  --fixedHeaderH: 62px;
+  --fixedFooterH: 50px;
 }
 
 *{ box-sizing:border-box; font-family:Arial, sans-serif; }
@@ -52,16 +52,16 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   background:transparent;
 }
 
-/* минимально комфортные паддинги у фиксированных областей */
+/* ✅ чуть меньше отступы у фиксированных областей */
 .headerWrap{
   max-width:720px;
   margin:auto;
-  padding:8px 14px;
+  padding:6px 14px;
 }
 .footerWrap{
   max-width:720px;
   margin:auto;
-  padding:8px 14px;
+  padding:6px 14px;
 }
 
 /* скроллится только эта зона */
@@ -72,14 +72,16 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   left:0; right:0;
   overflow:auto;
 }
-.wrap{ max-width:720px; margin:auto; padding:14px; }
+
+/* ✅ чуть меньше внутренние отступы, чтобы больше помещалось */
+.wrap{ max-width:720px; margin:auto; padding:12px; }
 
 .card{
   background:#fff;
   border:1px solid var(--border);
   border-radius:12px;
-  padding:12px;
-  margin-bottom:10px;
+  padding:11px;          /* было 12 */
+  margin-bottom:9px;     /* было 10 */
 }
 
 /* верхний блок (минимальная высота, кнопку не трогаем) */
@@ -87,8 +89,8 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   background:var(--accent);
   border-color:var(--accent);
   color:#fff;
-  padding:8px 12px;         /* уменьшили высоту блока */
-  margin:0;                 /* чтобы не увеличивать fixed-высоту */
+  padding:8px 12px;
+  margin:0;
 }
 
 .headerBar{
@@ -100,7 +102,7 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
 h1{
   margin:0;
   font-size:20px;
-  text-align:center; /* между левым краем и кнопкой */
+  text-align:center;
   flex:1;
 }
 
@@ -128,7 +130,6 @@ h1{
   color:#fff;
 }
 
-/* --- остальной CSS без изменений --- */
 input,button,select{
   padding:10px;
   border-radius:10px;
@@ -572,11 +573,30 @@ button.pill{
 let cabincrew="нет", airport="UUEE", reinforced="нет", landings="1-2", extend="нет";
 let tzMode = "MSK"; // MSK | UTC | LOCAL
 
+/* ✅ состояние “сохранено/не сохранено” */
+let isSaved = false;
+
+function markUnsaved(){
+  if(!isSaved) return;
+  isSaved = false;
+  const b = document.getElementById("btnSave");
+  b.classList.remove("saved");
+  b.textContent = "Сохранить";
+}
+
+function markSaved(){
+  isSaved = true;
+  const b = document.getElementById("btnSave");
+  b.classList.add("saved");
+  b.textContent = "Сохранено";
+}
+
 function setTzMode(mode){
   tzMode = mode;
   btnMSK.classList.toggle("active", tzMode==="MSK");
   btnUTC.classList.toggle("active", tzMode==="UTC");
   btnLOCAL.classList.toggle("active", tzMode==="LOCAL");
+  markUnsaved();
   render();
 }
 
@@ -593,13 +613,14 @@ function setCrew(type){
     airportBtn.textContent="UUEE";
     reinforcedBtn.textContent="Нет";
   }
+  markUnsaved();
   render();
 }
 
-function toggleAirport(){ airport=airport==="UUEE"?"другой":"UUEE"; airportBtn.textContent=airport; render(); }
-function toggleReinforced(){ reinforced=reinforced==="нет"?"да":"нет"; reinforcedBtn.textContent=reinforced==="да"?"Да":"Нет"; render(); }
-function toggleLandings(){ landings=landings==="1-2"?"3-4":"1-2"; landingsBtn.textContent=landings==="1-2"?"1–2":"3–4"; render(); }
-function toggleExtend(){ extend=extend==="нет"?"да":"нет"; extendBtn.textContent=extend==="да"?"Да":"Нет"; render(); }
+function toggleAirport(){ airport=airport==="UUEE"?"другой":"UUEE"; airportBtn.textContent=airport; markUnsaved(); render(); }
+function toggleReinforced(){ reinforced=reinforced==="нет"?"да":"нет"; reinforcedBtn.textContent=reinforced==="да"?"Да":"Нет"; markUnsaved(); render(); }
+function toggleLandings(){ landings=landings==="1-2"?"3-4":"1-2"; landingsBtn.textContent=landings==="1-2"?"1–2":"3–4"; markUnsaved(); render(); }
+function toggleExtend(){ extend=extend==="нет"?"да":"нет"; extendBtn.textContent=extend==="да"?"Да":"Нет"; markUnsaved(); render(); }
 
 function parseTime(t){ if(!t) return null; const [a,b]=t.split(":").map(Number); return a*60+b; }
 function fmt(m){ m=(m+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
@@ -673,12 +694,14 @@ function render(){
   outLdtLOC.textContent = fmt(mskToLocal(r.ldt_msk));
 }
 
+/* моментальный пересчет */
 let lastDep=depTime.value, lastFlt=flightTime.value;
 let lastTz=tzMode, lastDelta=(deltaUtc?deltaUtc.value:"3");
 setInterval(()=>{
   const d = (window.deltaUtc ? deltaUtc.value : "3");
   if(depTime.value!==lastDep || flightTime.value!==lastFlt || tzMode!==lastTz || d!==lastDelta){
     lastDep=depTime.value; lastFlt=flightTime.value; lastTz=tzMode; lastDelta=d;
+    markUnsaved();
     render();
   }
 },150);
@@ -716,14 +739,7 @@ function saveState(){
     extend
   };
   localStorage.setItem("shiftcalc_state", JSON.stringify(state));
-
-  const b = document.getElementById("btnSave");
-  b.classList.add("saved");
-  b.textContent = "Сохранено";
-  setTimeout(()=>{
-    b.classList.remove("saved");
-    b.textContent = "Сохранить";
-  }, 900);
+  markSaved(); /* ✅ теперь остается “Сохранено” */
 }
 
 function loadState(){
@@ -757,6 +773,7 @@ function loadState(){
     }
 
     render();
+    markSaved(); /* ✅ если загрузили сохраненное — тоже “Сохранено” */
   }catch(e){}
 }
 
@@ -767,23 +784,34 @@ function resetState(){
   flightTime.value = "02:30";
   deltaUtc.value = "3";
 
-  setTzMode("MSK");
-  setCrew("flight");
+  // напрямую, без markUnsaved (и сразу ставим "Сохранить")
+  tzMode = "MSK";
+  btnMSK.classList.add("active"); btnUTC.classList.remove("active"); btnLOCAL.classList.remove("active");
 
-  airport = "UUEE";
-  reinforced = "нет";
-  landings = "1-2";
-  extend = "нет";
+  cabincrew="нет";
+  btnFlight.classList.add("active"); btnCabin.classList.remove("active");
+  ccBlock.classList.remove("open");
+
+  airport="UUEE";
+  reinforced="нет";
+  landings="1-2";
+  extend="нет";
 
   airportBtn.textContent = "UUEE";
   reinforcedBtn.textContent = "Нет";
   landingsBtn.textContent = "1–2";
   extendBtn.textContent = "Нет";
 
+  isSaved = false;
+  const b = document.getElementById("btnSave");
+  b.classList.remove("saved");
+  b.textContent = "Сохранить";
+
   render();
 }
 
 ccBlock.classList.remove("open");
+btnSave.textContent = "Сохранить";
 setTzMode("MSK");
 loadState();
 render();
