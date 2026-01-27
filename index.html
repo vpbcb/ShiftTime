@@ -437,6 +437,26 @@ button.pill{
   }
 
   #btnReset{ width:100%; }
+    /* ✅ справа делаем “одну большую белую карточку”, как слева */
+  #rightCol{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px;
+    height:100%;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  /* ✅ внутренние карточки справа становятся “вложенными блоками” без своих рамок */
+  #rightCol > .card{
+    background:transparent;
+    border:0;
+    padding:0;
+    margin:0;
+  }
 }
 
 /* ================================
