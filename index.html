@@ -334,6 +334,14 @@ button.pill{
 .halfTitle{ width:100%; justify-self:stretch; display:flex; }
 .halfBlock{ display:grid; gap:9px; }
 
+/* ✅ LDT: во всех ориентациях — по центру белого блока, серая подложка на всю ширину */
+#ldtPill{
+  width:100%;
+  justify-self:stretch;
+  display:flex;
+  justify-content:center;
+}
+
 @media (max-width:639px){
   .results3{ grid-template-columns:1fr; }
   .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
@@ -359,13 +367,6 @@ button.pill{
   }
   .resultCard.durationCard .pill{ height:28px; }
   .resultCard.durationCard .timesTop{ padding-top:4px; }
-
-  #ldtPill{
-    width:100%;
-    justify-self:stretch;
-    display:flex;
-    justify-content:center;
-  }
 }
 
 .hintOverlay{
@@ -407,11 +408,11 @@ button.pill{
 }
 
 /* ============================================================
-   ✅ ИЗМЕНЕНИЯ ТОЛЬКО ДЛЯ ГОРИЗОНТАЛЬНОЙ ОРИЕНТАЦИИ (landscape)
-   1) header на всю ширину, Save справа
-   2) вводные данные слева
-   3) результаты (с "Продолжительность смены" и ниже) справа
-   4) Reset на всю ширину
+   ✅ ТОЛЬКО ДЛЯ ГОРИЗОНТАЛЬНОЙ ОРИЕНТАЦИИ (landscape)
+   - header/footer на всю ширину
+   - слева: inputsCard
+   - справа: rightCol (resultsCard + afterResultsCard) с фиксированной высотой
+   - reset на всю ширину
    ============================================================ */
 @media (min-width:640px) and (orientation:landscape){
 
@@ -423,27 +424,31 @@ button.pill{
     padding-right:14px;
   }
 
-  /* растягиваем синюю подложку */
-  .headerCard{
-    width:100%;
-  }
+  /* синяя подложка на всю ширину */
+  .headerCard{ width:100%; }
 
-  /* сетка контента: 2 колонки */
+  /* 2 колонки */
   .wrap{
     max-width:none;
     padding:10px 14px;
     display:grid;
     grid-template-columns: 1fr 1fr;
     gap:10px;
+    align-items:start;
   }
 
-  /* размещение блоков */
   #inputsCard{ grid-column:1; grid-row:1; }
-  #resultsCard{ grid-column:2; grid-row:1; }
-  #afterResultsCard{ grid-column:2; grid-row:2; }
 
-  /* чтобы результаты не прижимались */
-  #resultsCard .results3{ gap:9px; }
+  /* правая колонка — отдельный контейнер */
+  #rightCol{
+    grid-column:2;
+    grid-row:1;
+    overflow:auto;     /* если не помещается — скролл внутри зелёного блока */
+  }
+
+  /* карточки внутри правой колонки */
+  #rightCol > .card{ margin-bottom:8px; }
+  #rightCol > .card:last-child{ margin-bottom:0; }
 
   /* reset на всю ширину */
   #btnReset{ width:100%; }
@@ -463,7 +468,6 @@ button.pill{
   border-radius:12px !important;
   box-shadow:0 10px 30px rgba(0,0,0,.16) !important;
 }
-
 </style>
 </head>
 
@@ -502,7 +506,7 @@ button.pill{
 <div class="scrollArea">
   <div class="wrap">
 
-    <!-- ВВОДНЫЕ ДАННЫЕ (СЛЕВА В LANDSCAPE) -->
+    <!-- ЛЕВЫЙ (красный) -->
     <div class="card" id="inputsCard">
 
       <div class="depGrid">
@@ -569,65 +573,66 @@ button.pill{
 
     </div>
 
-    <!-- РЕЗУЛЬТАТЫ (СПРАВА В LANDSCAPE) -->
-    <div class="card" id="resultsCard">
-      <div class="results3">
+    <!-- ПРАВЫЙ (зелёный) — контейнер -->
+    <div id="rightCol">
+      <div class="card" id="resultsCard">
+        <div class="results3">
 
-        <div class="resultCard durationCard">
-          <button type="button" class="pill fullPill hasHint" onclick="openHint('duration')">Продолжительность смены</button>
-          <div class="timesTop" style="display:flex; justify-content:center;">
-            <div class="out" id="outDuration">—</div>
-          </div>
-        </div>
-
-        <div class="resultCard">
-          <div class="pill fullPill">Окончание смены</div>
-          <div class="timesTop">
-            <div class="multiTimes">
-              <div class="mtCol"><div class="mtTime" id="outEndMSK">—</div><div class="mtLbl">МСК</div></div>
-              <div class="mtCol"><div class="mtTime" id="outEndUTC">—</div><div class="mtLbl">UTC</div></div>
-              <div class="mtCol"><div class="mtTime" id="outEndLOC">—</div><div class="mtLbl">Local</div></div>
+          <div class="resultCard durationCard">
+            <button type="button" class="pill fullPill hasHint" onclick="openHint('duration')">Продолжительность смены</button>
+            <div class="timesTop" style="display:flex; justify-content:center;">
+              <div class="out" id="outDuration">—</div>
             </div>
           </div>
-        </div>
 
-        <div class="resultCard">
-          <div class="pill fullPill">Выключение двигателей</div>
-          <div class="timesTop">
-            <div class="multiTimes">
-              <div class="mtCol"><div class="mtTime" id="outEngMSK">—</div><div class="mtLbl">МСК</div></div>
-              <div class="mtCol"><div class="mtTime" id="outEngUTC">—</div><div class="mtLbl">UTC</div></div>
-              <div class="mtCol"><div class="mtTime" id="outEngLOC">—</div><div class="mtLbl">Local</div></div>
+          <div class="resultCard">
+            <div class="pill fullPill">Окончание смены</div>
+            <div class="timesTop">
+              <div class="multiTimes">
+                <div class="mtCol"><div class="mtTime" id="outEndMSK">—</div><div class="mtLbl">МСК</div></div>
+                <div class="mtCol"><div class="mtTime" id="outEndUTC">—</div><div class="mtLbl">UTC</div></div>
+                <div class="mtCol"><div class="mtTime" id="outEndLOC">—</div><div class="mtLbl">Local</div></div>
+              </div>
             </div>
           </div>
-        </div>
 
+          <div class="resultCard">
+            <div class="pill fullPill">Выключение двигателей</div>
+            <div class="timesTop">
+              <div class="multiTimes">
+                <div class="mtCol"><div class="mtTime" id="outEngMSK">—</div><div class="mtLbl">МСК</div></div>
+                <div class="mtCol"><div class="mtTime" id="outEngUTC">—</div><div class="mtLbl">UTC</div></div>
+                <div class="mtCol"><div class="mtTime" id="outEngLOC">—</div><div class="mtLbl">Local</div></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
-    </div>
 
-    <!-- БЛОК ПОСЛЕ РЕЗУЛЬТАТОВ (ТОЖЕ СПРАВА В LANDSCAPE) -->
-    <div class="card" id="afterResultsCard">
-      <div class="sixRow">
+      <div class="card" id="afterResultsCard">
+        <div class="sixRow">
 
-        <div>
-          <div class="sixInline">
-            <div class="fieldTitle fullTitle wrap2">Время на<br>обратный полет</div>
-            <input id="flightTime" type="time" value="02:30" step="60">
-          </div>
-        </div>
-
-        <div>
-          <div class="pill fullPill" id="ldtPill">LDT</div>
-
-          <div class="timesTop">
-            <div class="multiTimes">
-              <div class="mtCol"><div class="mtTime" id="outLdtMSK">—</div><div class="mtLbl">МСК</div></div>
-              <div class="mtCol"><div class="mtTime" id="outLdtUTC">—</div><div class="mtLbl">UTC</div></div>
-              <div class="mtCol"><div class="mtTime" id="outLdtLOC">—</div><div class="mtLbl">Local</div></div>
+          <div>
+            <div class="sixInline">
+              <div class="fieldTitle fullTitle wrap2">Время на<br>обратный полет</div>
+              <input id="flightTime" type="time" value="02:30" step="60">
             </div>
           </div>
-        </div>
 
+          <div>
+            <div class="pill fullPill" id="ldtPill">LDT</div>
+
+            <div class="timesTop">
+              <div class="multiTimes">
+                <div class="mtCol"><div class="mtTime" id="outLdtMSK">—</div><div class="mtLbl">МСК</div></div>
+                <div class="mtCol"><div class="mtTime" id="outLdtUTC">—</div><div class="mtLbl">UTC</div></div>
+                <div class="mtCol"><div class="mtTime" id="outLdtLOC">—</div><div class="mtLbl">Local</div></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
 
@@ -889,6 +894,10 @@ function resetState(){
   b.textContent = "Сохранить";
 
   render();
+
+  // ✅ при сбросе — можно пере-зафиксировать высоту правой колонки в landscape
+  rightLockedH = null;
+  lockRightHeight();
 }
 
 ccBlock.classList.remove("open");
@@ -919,6 +928,52 @@ function hideUpdateToast(){
     updateToast.style.display = "none";
   }, remain);
 }
+
+/* ============================================================
+   ✅ LANDSCAPE: фиксируем высоту правой колонки = высоте inputsCard
+   и НЕ пересчитываем при нажатии Cabin Crew
+   ============================================================ */
+let rightLockedH = null;
+
+function isLandscapeNow(){
+  return window.matchMedia("(orientation: landscape)").matches && window.innerWidth >= 640;
+}
+
+function lockRightHeight(){
+  const inputs = document.getElementById("inputsCard");
+  const right = document.getElementById("rightCol");
+  if(!inputs || !right) return;
+
+  if(!isLandscapeNow()){
+    right.style.height = "";
+    rightLockedH = null;
+    return;
+  }
+
+  if(rightLockedH == null){
+    rightLockedH = inputs.offsetHeight;
+    right.style.height = rightLockedH + "px";
+  }else{
+    right.style.height = rightLockedH + "px";
+  }
+}
+
+window.addEventListener("load", () => {
+  rightLockedH = null;
+  lockRightHeight();
+});
+window.addEventListener("orientationchange", () => {
+  rightLockedH = null;
+  setTimeout(lockRightHeight, 80);
+});
+window.addEventListener("resize", () => {
+  if(!isLandscapeNow()){
+    rightLockedH = null;
+    lockRightHeight();
+    return;
+  }
+  if(rightLockedH == null) lockRightHeight();
+});
 </script>
 
 <script>
