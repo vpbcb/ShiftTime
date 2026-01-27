@@ -64,7 +64,7 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   padding:6px 14px;
 }
 
-/* скроллится только эта зона */
+/* скроллится только эта зона (в portrait) */
 .scrollArea{
   position:fixed;
   top:var(--fixedHeaderH);
@@ -342,6 +342,7 @@ button.pill{
   justify-content:center;
 }
 
+/* portrait-правила */
 @media (max-width:639px){
   .results3{ grid-template-columns:1fr; }
   .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
@@ -409,14 +410,13 @@ button.pill{
 
 /* ============================================================
    ✅ ТОЛЬКО ДЛЯ ГОРИЗОНТАЛЬНОЙ ОРИЕНТАЦИИ (landscape)
-   - header/footer на всю ширину
-   - слева: inputsCard
-   - справа: rightCol (resultsCard + afterResultsCard) с фиксированной высотой
-   - reset на всю ширину
+   - внешняя scrollArea НЕ скроллится
+   - скролл внутри колонок (inputsCard / rightCol)
+   - rightCol по высоте как inputsCard на старте (фиксируется JS)
+   - заголовки результатов по ширине белого блока
    ============================================================ */
 @media (min-width:640px) and (orientation:landscape){
 
-  /* header/footer — на всю ширину экрана */
   .headerWrap,
   .footerWrap{
     max-width:none;
@@ -424,39 +424,56 @@ button.pill{
     padding-right:14px;
   }
 
-  /* синяя подложка на всю ширину */
   .headerCard{ width:100%; }
 
-  /* 2 колонки */
+  /* ✅ важное: убираем внешний скролл */
+  .scrollArea{ overflow:hidden; }
+
   .wrap{
     max-width:none;
     padding:10px 14px;
     display:grid;
     grid-template-columns: 1fr 1fr;
     gap:10px;
-    align-items:start;
+    height:100%;
+    overflow:hidden;
+    align-items:stretch;
   }
 
-  #inputsCard{ grid-column:1; grid-row:1; }
+  /* левый скроллится сам */
+  #inputsCard{
+    grid-column:1;
+    grid-row:1;
+    height:100%;
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+  }
 
-  /* правая колонка — отдельный контейнер */
+  /* правый скроллится сам, высота задаётся JS */
   #rightCol{
     grid-column:2;
     grid-row:1;
-    overflow:auto;     /* если не помещается — скролл внутри зелёного блока */
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
   }
 
-  /* карточки внутри правой колонки */
   #rightCol > .card{ margin-bottom:8px; }
   #rightCol > .card:last-child{ margin-bottom:0; }
 
-  /* reset на всю ширину */
+  /* ✅ в landscape заголовки результатов на всю ширину белого блока */
+  #resultsCard .pill.fullPill,
+  #resultsCard button.pill.fullPill,
+  #afterResultsCard .pill.fullPill,
+  #afterResultsCard button.pill.fullPill{
+    width:100%;
+    justify-self:stretch;
+  }
+
   #btnReset{ width:100%; }
 }
 
 /* ============================================================
    ✅ Toast: серый прямоугольник + черный текст + по центру
-   (inline-стили переопределяем !important)
    ============================================================ */
 #updateToast{
   top:50% !important;
@@ -700,6 +717,7 @@ function setCrew(type){
   }
   markUnsaved();
   render();
+  // ✅ не меняем фиксированную высоту rightCol при Cabin Crew
 }
 
 function toggleAirport(){ airport=airport==="UUEE"?"другой":"UUEE"; airportBtn.textContent=airport; markUnsaved(); render(); }
@@ -895,7 +913,7 @@ function resetState(){
 
   render();
 
-  // ✅ при сбросе — можно пере-зафиксировать высоту правой колонки в landscape
+  // ✅ при сбросе — пере-зафиксируем высоту правой колонки в landscape
   rightLockedH = null;
   lockRightHeight();
 }
@@ -931,7 +949,7 @@ function hideUpdateToast(){
 
 /* ============================================================
    ✅ LANDSCAPE: фиксируем высоту правой колонки = высоте inputsCard
-   и НЕ пересчитываем при нажатии Cabin Crew
+   (фиксируется один раз при входе в landscape и НЕ меняется при Cabin Crew)
    ============================================================ */
 let rightLockedH = null;
 
@@ -952,10 +970,8 @@ function lockRightHeight(){
 
   if(rightLockedH == null){
     rightLockedH = inputs.offsetHeight;
-    right.style.height = rightLockedH + "px";
-  }else{
-    right.style.height = rightLockedH + "px";
   }
+  right.style.height = rightLockedH + "px";
 }
 
 window.addEventListener("load", () => {
