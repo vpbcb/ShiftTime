@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="ru">
 <head>
@@ -604,4 +605,229 @@ function setTzMode(mode){
 function setCrew(type){
   cabincrew=(type==="cabin")?"да":"нет";
   btnFlight.classList.toggle("active",cabincrew==="нет");
-  btnCabin.classList.toggle("active",cabincrew==="д
+  btnCabin.classList.toggle("active",cabincrew==="да");
+
+  if(cabincrew==="да") ccBlock.classList.add("open");
+  else ccBlock.classList.remove("open");
+
+  if(cabincrew==="нет"){
+    airport="UUEE"; reinforced="нет";
+    airportBtn.textContent="UUEE";
+    reinforcedBtn.textContent="Нет";
+  }
+  markUnsaved();
+  render();
+}
+
+function toggleAirport(){ airport=airport==="UUEE"?"другой":"UUEE"; airportBtn.textContent=airport; markUnsaved(); render(); }
+function toggleReinforced(){ reinforced=reinforced==="нет"?"да":"нет"; reinforcedBtn.textContent=reinforced==="да"?"Да":"Нет"; markUnsaved(); render(); }
+function toggleLandings(){ landings=landings==="1-2"?"3-4":"1-2"; landingsBtn.textContent=landings==="1-2"?"1–2":"3–4"; markUnsaved(); render(); }
+function toggleExtend(){ extend=extend==="нет"?"да":"нет"; extendBtn.textContent=extend==="да"?"Да":"Нет"; markUnsaved(); render(); }
+
+function parseTime(t){ if(!t) return null; const [a,b]=t.split(":").map(Number); return a*60+b; }
+function fmt(m){ m=(m+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
+
+function getDeltaHours(){
+  const v = Number(deltaUtc?.value || 3);
+  return Number.isFinite(v) ? v : 3;
+}
+function toMskMinutes(inputMinutes){
+  const delta = getDeltaHours();
+  if(tzMode==="MSK") return inputMinutes;
+  if(tzMode==="UTC") return inputMinutes + 3*60;
+  return inputMinutes + (3 - delta)*60; // LOCAL -> MSK
+}
+function mskToUtc(mskMinutes){ return mskMinutes - 3*60; }
+function mskToLocal(mskMinutes){
+  const delta = getDeltaHours();
+  return mskToUtc(mskMinutes) + delta*60;
+}
+
+function calculate(){
+  const depInput=parseTime(depTime.value);
+  const flt=parseTime(flightTime.value);
+  if(depInput==null||flt==null) return null;
+
+  const dep = toMskMinutes(depInput);
+
+  const checkIn = dep - ((cabincrew==="да" && airport==="UUEE") ? 90 : 60);
+  const isDay = checkIn>=361 && checkIn<=1319;
+
+  let norm=null;
+  if(cabincrew==="да" && reinforced==="да"){
+    norm = (landings==="1-2") ? (extend==="да"?960:780) : (extend==="да"?900:720);
+  } else {
+    if(landings==="1-2") norm = isDay ? (extend==="да"?840:720) : (extend==="да"?780:660);
+    if(landings==="3-4") norm = isDay ? (extend==="да"?750:630) : (extend==="да"?720:600);
+  }
+  if(!norm) return null;
+
+  const end = checkIn + norm;
+  return {
+    duration: end - checkIn,
+    eng_msk: end - 30,
+    end_msk: end,
+    ldt_msk: end - 30 - flt
+  };
+}
+
+function render(){
+  const r=calculate();
+  if(!r){
+    outDuration.textContent="—";
+    outEngMSK.textContent="—"; outEngUTC.textContent="—"; outEngLOC.textContent="—";
+    outEndMSK.textContent="—"; outEndUTC.textContent="—"; outEndLOC.textContent="—";
+    outLdtMSK.textContent="—"; outLdtUTC.textContent="—"; outLdtLOC.textContent="—";
+    return;
+  }
+
+  outDuration.textContent = fmt(r.duration);
+
+  outEngMSK.textContent = fmt(r.eng_msk);
+  outEngUTC.textContent = fmt(mskToUtc(r.eng_msk));
+  outEngLOC.textContent = fmt(mskToLocal(r.eng_msk));
+
+  outEndMSK.textContent = fmt(r.end_msk);
+  outEndUTC.textContent = fmt(mskToUtc(r.end_msk));
+  outEndLOC.textContent = fmt(mskToLocal(r.end_msk));
+
+  outLdtMSK.textContent = fmt(r.ldt_msk);
+  outLdtUTC.textContent = fmt(mskToUtc(r.ldt_msk));
+  outLdtLOC.textContent = fmt(mskToLocal(r.ldt_msk));
+}
+
+/* моментальный пересчет */
+let lastDep=depTime.value, lastFlt=flightTime.value;
+let lastTz=tzMode, lastDelta=(deltaUtc?deltaUtc.value:"3");
+setInterval(()=>{
+  const d = (window.deltaUtc ? deltaUtc.value : "3");
+  if(depTime.value!==lastDep || flightTime.value!==lastFlt || tzMode!==lastTz || d!==lastDelta){
+    lastDep=depTime.value; lastFlt=flightTime.value; lastTz=tzMode; lastDelta=d;
+    markUnsaved();
+    render();
+  }
+},150);
+
+/* подсказки */
+const hintOverlay = document.getElementById("hintOverlay");
+const hintTitleEl = document.getElementById("hintTitle");
+const hintTextEl = document.getElementById("hintText");
+
+const HINTS = {
+  delta: { title:"Δ UTC", text:"Часовой пояс относительно UTC для расчетов, с учетом местного времени." },
+  extend: { title:"Продление КВС", text:"+2 часа / +3 часа (для усиленного экипажа)." },
+  duration: { title:"Продолжительность смены", text:"06:01–21:59 МСК — дневная явка / 22:00–06:00 МСК — ночная явка." },
+  reinforced: { title:"Усиленный экипаж", text:"5 ЧКЭ для A320 / 6 ЧКЭ для A321 (стажер не учитывается)." }
+};
+
+function openHint(key){
+  const h = HINTS[key];
+  if(!h) return;
+  hintTitleEl.textContent = h.title;
+  hintTextEl.textContent = h.text;
+  hintOverlay.classList.add("open");
+}
+function closeHint(){ hintOverlay.classList.remove("open"); }
+
+/* сохранение */
+function saveState(){
+  const state = {
+    depTime: depTime.value,
+    flightTime: flightTime.value,
+    tzMode,
+    deltaUtc: deltaUtc.value,
+    cabincrew,
+    airport,
+    reinforced,
+    landings,
+    extend
+  };
+  localStorage.setItem("shiftcalc_state", JSON.stringify(state));
+  markSaved();
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem("shiftcalc_state");
+    if(!raw) return;
+    const s = JSON.parse(raw);
+
+    if(s.depTime) depTime.value = s.depTime;
+    if(s.flightTime) flightTime.value = s.flightTime;
+    if(s.deltaUtc) deltaUtc.value = String(s.deltaUtc);
+
+    if(s.tzMode) setTzMode(s.tzMode);
+    if(s.cabincrew === "да") setCrew("cabin"); else setCrew("flight");
+
+    if(s.airport){
+      airport = s.airport;
+      airportBtn.textContent = airport;
+    }
+    if(s.reinforced){
+      reinforced = s.reinforced;
+      reinforcedBtn.textContent = (reinforced==="да") ? "Да" : "Нет";
+    }
+    if(s.landings){
+      landings = s.landings;
+      landingsBtn.textContent = (landings==="1-2") ? "1–2" : "3–4";
+    }
+    if(s.extend){
+      extend = s.extend;
+      extendBtn.textContent = (extend==="да") ? "Да" : "Нет";
+    }
+
+    render();
+    markSaved();
+  }catch(e){}
+}
+
+function resetState(){
+  localStorage.removeItem("shiftcalc_state");
+
+  depTime.value = "05:00";
+  flightTime.value = "02:30";
+  deltaUtc.value = "3";
+
+  tzMode = "MSK";
+  btnMSK.classList.add("active"); btnUTC.classList.remove("active"); btnLOCAL.classList.remove("active");
+
+  cabincrew="нет";
+  btnFlight.classList.add("active"); btnCabin.classList.remove("active");
+  ccBlock.classList.remove("open");
+
+  airport="UUEE";
+  reinforced="нет";
+  landings="1-2";
+  extend="нет";
+
+  airportBtn.textContent = "UUEE";
+  reinforcedBtn.textContent = "Нет";
+  landingsBtn.textContent = "1–2";
+  extendBtn.textContent = "Нет";
+
+  isSaved = false;
+  const b = document.getElementById("btnSave");
+  b.classList.remove("saved");
+  b.textContent = "Сохранить";
+
+  render();
+}
+
+ccBlock.classList.remove("open");
+btnSave.textContent = "Сохранить";
+setTzMode("MSK");
+loadState();
+render();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
+</script>
+
+</body>
+</html>
+```
