@@ -7,9 +7,7 @@ const PRECACHE_URLS = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png"
+ 
 ];
 
 // Рассылка сообщений всем открытым вкладкам/окнам
@@ -129,3 +127,4 @@ self.addEventListener("fetch", (event) => {
   // Остальные файлы (иконки, css, js, manifest...)
   event.respondWith(handleAsset(req, event));
 });
+
