@@ -7,6 +7,7 @@
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1976d2">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
 <style>
 :root{
@@ -28,13 +29,10 @@
 
   --hintFs:12.5px;
 
-  /* единая высота для "больших" кнопок (оставляем для тех, где нужна высота из-за значка ?) */
-  --actionBtnH:46px;
-  /* Меньшая высота для перечисленных пользователем кнопок */
   --actionBtnHSmall:38px;
 }
 
-*{ font-family:Arial, sans-serif; box-sizing:border-box; }
+*{ box-sizing:border-box; font-family:Arial, sans-serif; }
 body{ margin:0; background:var(--bg); color:var(--ink); }
 .wrap{ max-width:720px; margin:auto; padding:14px; }
 
@@ -52,9 +50,44 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   border-color:var(--accent);
   color:#fff;
 }
-h1{ font-size:20px; margin:0; text-align:center; }
 
-input, button, select{
+/* ✅ ИЗМЕНЕНО: заголовок не по центру, а слева (внутри хедера — flex) */
+.headerBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+/* ✅ ИЗМЕНЕНО: заголовок смещен влево */
+h1{
+  margin:0;
+  font-size:20px;
+  text-align:left;
+  flex:1;
+}
+
+/* ✅ НОВОЕ: кнопка "Сохранить" на синей подложке */
+.saveBtn{
+  border:1px solid rgba(255,255,255,0.65);
+  background:rgba(255,255,255,0.16);
+  color:#fff;
+  border-radius:10px;
+  padding:8px 12px;
+  font-weight:700;
+  cursor:pointer;
+  height:38px;
+  display:flex;
+  align-items:center;
+}
+.saveBtn:active{
+  transform:translateY(1px);
+}
+.saveBtn.saved{
+  background:rgba(255,255,255,0.28);
+}
+
+input,button,select{
   padding:10px;
   border-radius:10px;
   border:1px solid var(--ctlBorder);
@@ -69,7 +102,6 @@ input[type="time"]{
   text-align:center;
 }
 
-/* delta UTC можно уменьшить по высоте */
 select.deltaSelect{
   width:120px;
   font-size:var(--timeFs);
@@ -79,24 +111,21 @@ select.deltaSelect{
   height:38px;
 }
 
-/* Заголовки-подложки */
 .fieldTitle{
-  display:inline-flex;
+  display:flex;
   align-items:center;
   justify-content:center;
-  font-size:var(--titleFs);
-  padding:var(--titlePadV) var(--titlePadH);
-  border-radius:999px;
   background:var(--pillBg);
   border:1px solid var(--border);
-  width:fit-content;
+  border-radius:999px;
+  font-size:var(--titleFs);
+  padding:6px 10px;
   font-weight:600;
   white-space:nowrap;
 }
 
-/* чтобы кнопка с классом fieldTitle НЕ наследовала padding:10px от button */
 button.fieldTitle{
-  padding:var(--titlePadV) var(--titlePadH);
+  padding:6px 10px;
   border-radius:999px;
   background:var(--pillBg);
   border:1px solid var(--border);
@@ -104,7 +133,6 @@ button.fieldTitle{
   line-height:1.1;
 }
 
-/* значок ? в кружке — не перекрывает текст (снаружи) */
 .hasHint{ position:relative; }
 .hasHint::after{
   content:"?";
@@ -123,7 +151,6 @@ button.fieldTitle{
   pointer-events:none;
 }
 
-/* 1) блок вылета */
 .depGrid{
   display:grid;
   grid-template-columns: auto 1fr;
@@ -144,7 +171,6 @@ button.fieldTitle{
   flex-wrap:nowrap;
 }
 
-/* Кнопки МСК/UTC/Local */
 .tzGroup{ display:flex; gap:8px; flex-wrap:nowrap; }
 .tzBtn{
   font-weight:600;
@@ -154,24 +180,12 @@ button.fieldTitle{
 }
 .tzBtn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
 
-/* Режим Flight/Cabin */
 .modeButtons{ display:flex; gap:10px; }
 .modeBtn{ flex:1; font-weight:600; }
 .modeBtn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
 
 .toggleBtn{ font-weight:600; }
 
-/* "большая" кнопка (с запасом под значок ?) */
-.actionBtn{
-  height:var(--actionBtnH);
-  padding-top:0;
-  padding-bottom:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-/* "малая" высота — как было раньше */
 .actionBtnSmall{
   height:var(--actionBtnHSmall);
   padding-top:0;
@@ -181,7 +195,6 @@ button.fieldTitle{
   justify-content:center;
 }
 
-/* Анимация Cabin Crew */
 #ccBlock{
   overflow:hidden;
   max-height:0;
@@ -191,7 +204,6 @@ button.fieldTitle{
 }
 #ccBlock.open{ max-height:260px; opacity:1; transform:translateY(0); }
 
-/* Δ UTC блок */
 #deltaFold{ grid-area:delta; }
 .deltaInner{
   display:flex;
@@ -200,7 +212,6 @@ button.fieldTitle{
   padding-top:6px;
 }
 
-/* ===== РЕЗУЛЬТАТЫ ===== */
 .results3{ display:grid; gap:12px; }
 
 .resultCard{
@@ -214,7 +225,7 @@ button.fieldTitle{
 }
 
 .pill{
-  display:inline-flex;
+  display:flex;
   align-items:center;
   justify-content:center;
   height:32px;
@@ -228,7 +239,6 @@ button.fieldTitle{
   font-weight:600;
   white-space:nowrap;
 }
-
 button.pill{
   padding:0 10px;
   background:var(--pillBg);
@@ -249,10 +259,7 @@ button.pill{
 .mtTime{ font-size:var(--resultTimeFs); font-weight:700; line-height:1.1; }
 .mtLbl{ font-size:14px; color:var(--muted); }
 
-/* 6)+LDT */
 .sixRow{ display:grid; grid-template-columns:1fr; gap:10px; align-items:start; }
-
-/* 6) в одну линию */
 .sixInline{
   display:grid;
   grid-template-columns:1fr auto;
@@ -265,8 +272,8 @@ button.pill{
   height:42px;
   border-radius:12px;
   width:100%;
-  justify-content:center;   /* последний штрих: по центру */
-  text-align:center;        /* на всякий случай */
+  justify-content:center;
+  text-align:center;
 }
 .sixInline input[type="time"]{
   height:42px;
@@ -274,7 +281,6 @@ button.pill{
   padding-bottom:0;
 }
 
-/* пары 3/7 и 4/5 */
 .pairRow{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -283,12 +289,10 @@ button.pill{
 .halfTitle{ width:100%; justify-self:stretch; display:flex; }
 .halfBlock{ display:grid; gap:10px; }
 
-/* мобильная вертикаль: результаты друг под другом */
 @media (max-width:639px){
   .results3{ grid-template-columns:1fr; }
   .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
 
-  /* tzGroup растягиваем от input до правого края */
   .depTz.tzGroup{
     width:100%;
     justify-content:space-between;
@@ -302,10 +306,8 @@ button.pill{
     border-radius:999px;
   }
 
-  /* полноширинные подложки в результатах */
   .resultCard .pill.fullPill{ width:100%; justify-self:stretch; }
 
-  /* чуть ниже блок "Продолжительность смены" */
   .resultCard.durationCard{
     padding:8px 10px;
     grid-template-rows:34px auto;
@@ -313,7 +315,6 @@ button.pill{
   .resultCard.durationCard .pill{ height:28px; }
   .resultCard.durationCard .timesTop{ padding-top:5px; }
 
-  /* LDT pill на всю ширину как у результатов (в т.ч. как "Окончание смены") */
   #ldtPill{
     width:100%;
     justify-self:stretch;
@@ -322,7 +323,6 @@ button.pill{
   }
 }
 
-/* ===== Пояснения (оверлей поверх страницы) ===== */
 .hintOverlay{
   position:fixed;
   inset:0;
@@ -366,13 +366,16 @@ button.pill{
 <body>
 <div class="wrap">
 
+<!-- ✅ ИЗМЕНЕНО: хедер теперь с кнопкой "Сохранить" справа -->
 <div class="card headerCard">
-  <h1>Расчет смены</h1>
+  <div class="headerBar">
+    <h1>Расчет смены</h1>
+    <button type="button" id="btnSave" class="saveBtn" onclick="saveState()">Сохранить</button>
+  </div>
 </div>
 
 <div class="card">
 
-  <!-- 1) -->
   <div class="depGrid">
     <span class="fieldTitle depTitle fullTitle">Время вылета по расписанию</span>
 
@@ -386,7 +389,6 @@ button.pill{
       <button type="button" id="btnLOCAL" class="tzBtn" onclick="setTzMode('LOCAL')">Local</button>
     </div>
 
-    <!-- Δ UTC — всегда видим -->
     <div id="deltaFold">
       <div class="deltaInner">
         <button type="button" class="fieldTitle hasHint" onclick="openHint('delta')">Δ UTC</button>
@@ -400,45 +402,37 @@ button.pill{
     </div>
   </div>
 
-  <!-- Расчет для -->
   <div style="margin-top:12px;">
     <div class="fieldTitle fullTitle">Расчет для</div>
     <div class="modeButtons" style="margin-top:10px;">
-      <!-- эти 2 кнопки должны быть меньшей высоты -->
       <button type="button" id="btnFlight" class="modeBtn actionBtnSmall active" onclick="setCrew('flight')">Flight Crew</button>
       <button type="button" id="btnCabin" class="modeBtn actionBtnSmall" onclick="setCrew('cabin')">Cabin Crew</button>
     </div>
   </div>
 
-  <!-- Аэропорт/Усиленный -->
   <div id="ccBlock" style="margin-top:12px;">
     <div class="pairRow">
       <div class="halfBlock">
         <div class="fieldTitle halfTitle">Аэропорт явки</div>
-        <!-- UUEE меньшей высоты -->
         <button type="button" id="airportBtn" class="toggleBtn actionBtnSmall" onclick="toggleAirport()">UUEE</button>
       </div>
 
       <div class="halfBlock">
         <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('reinforced')">Усиленный экипаж</button>
-        <!-- Нет (усиленный) меньшей высоты -->
         <button type="button" id="reinforcedBtn" class="toggleBtn actionBtnSmall" onclick="toggleReinforced()">Нет</button>
       </div>
     </div>
   </div>
 
-  <!-- Посадки/Продление -->
   <div style="margin-top:12px;">
     <div class="pairRow">
       <div class="halfBlock">
         <div class="fieldTitle halfTitle">Кол-во посадок</div>
-        <!-- 1–2 меньшей высоты -->
         <button type="button" id="landingsBtn" class="toggleBtn actionBtnSmall" onclick="toggleLandings()">1–2</button>
       </div>
 
       <div class="halfBlock">
         <button type="button" class="fieldTitle halfTitle hasHint" onclick="openHint('extend')">Продление КВС</button>
-        <!-- Нет (продление) меньшей высоты -->
         <button type="button" id="extendBtn" class="toggleBtn actionBtnSmall" onclick="toggleExtend()">Нет</button>
       </div>
     </div>
@@ -457,6 +451,7 @@ button.pill{
       </div>
     </div>
 
+    <!-- ✅ Поменяны местами эти два блока: сначала Окончание смены, потом Выключение двигателей -->
     <div class="resultCard">
       <div class="pill fullPill">Окончание смены</div>
       <div class="timesTop">
@@ -467,6 +462,7 @@ button.pill{
         </div>
       </div>
     </div>
+
     <div class="resultCard">
       <div class="pill fullPill">Выключение двигателей</div>
       <div class="timesTop">
@@ -477,8 +473,6 @@ button.pill{
         </div>
       </div>
     </div>
-
-    
 
   </div>
 </div>
@@ -495,7 +489,6 @@ button.pill{
     </div>
 
     <div>
-      <!-- LDT по ширине как "Окончание смены" и по центру -->
       <div class="pill fullPill" id="ldtPill">LDT</div>
 
       <div class="timesTop">
@@ -648,22 +641,10 @@ const hintTitleEl = document.getElementById("hintTitle");
 const hintTextEl = document.getElementById("hintText");
 
 const HINTS = {
-  delta: {
-    title: "Δ UTC",
-    text: "Часовой пояс относительно UTC для расчетов, с учетом местного времени."
-  },
-  extend: {
-    title: "Продление КВС",
-    text: "+2 часа / +3 часа (для усиленного экипажа)."
-  },
-  duration: {
-    title: "Продолжительность смены",
-    text: "06:01–21:59 МСК — дневная явка / 22:00–06:00 МСК — ночная явка."
-  },
-  reinforced: {
-    title: "Усиленный экипаж",
-    text: "5 ЧКЭ для A320 / 6 ЧКЭ для A321 (стажер не учитывается)."
-  }
+  delta: { title:"Δ UTC", text:"Часовой пояс относительно UTC для расчетов, с учетом местного времени." },
+  extend: { title:"Продление КВС", text:"+2 часа / +3 часа (для усиленного экипажа)." },
+  duration: { title:"Продолжительность смены", text:"06:01–21:59 МСК — дневная явка / 22:00–06:00 МСК — ночная явка." },
+  reinforced: { title:"Усиленный экипаж", text:"5 ЧКЭ для A320 / 6 ЧКЭ для A321 (стажер не учитывается)." }
 };
 
 function openHint(key){
@@ -675,21 +656,80 @@ function openHint(key){
 }
 function closeHint(){ hintOverlay.classList.remove("open"); }
 
+/* ✅ НОВОЕ: сохранение/загрузка состояния (не влияет на расчеты, только запоминает текущие значения) */
+function saveState(){
+  const state = {
+    depTime: depTime.value,
+    flightTime: flightTime.value,
+    tzMode,
+    deltaUtc: deltaUtc.value,
+    cabincrew,
+    airport,
+    reinforced,
+    landings,
+    extend
+  };
+  localStorage.setItem("shiftcalc_state", JSON.stringify(state));
+
+  const b = document.getElementById("btnSave");
+  b.classList.add("saved");
+  b.textContent = "Сохранено";
+  setTimeout(()=>{
+    b.classList.remove("saved");
+    b.textContent = "Сохранить";
+  }, 900);
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem("shiftcalc_state");
+    if(!raw) return;
+    const s = JSON.parse(raw);
+
+    if(s.depTime) depTime.value = s.depTime;
+    if(s.flightTime) flightTime.value = s.flightTime;
+    if(s.deltaUtc) deltaUtc.value = String(s.deltaUtc);
+
+    // восстановим режимы/кнопки
+    if(s.tzMode) setTzMode(s.tzMode);
+    if(s.cabincrew === "да") setCrew("cabin"); else setCrew("flight");
+
+    if(s.airport){
+      airport = s.airport;
+      airportBtn.textContent = airport;
+    }
+    if(s.reinforced){
+      reinforced = s.reinforced;
+      reinforcedBtn.textContent = (reinforced==="да") ? "Да" : "Нет";
+    }
+    if(s.landings){
+      landings = s.landings;
+      landingsBtn.textContent = (landings==="1-2") ? "1–2" : "3–4";
+    }
+    if(s.extend){
+      extend = s.extend;
+      extendBtn.textContent = (extend==="да") ? "Да" : "Нет";
+    }
+
+    render();
+  }catch(e){}
+}
+
 /* старт */
 ccBlock.classList.remove("open");
 setTzMode("MSK");
+loadState();
 render();
 </script>
-  <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js");
-    });
-  }
+
+<!-- Service Worker регистрация (если есть sw.js) -->
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
 </script>
 
 </body>
 </html>
-
-
-
