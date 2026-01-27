@@ -1,6 +1,6 @@
 {
   "name": "Расчет смены",
-  "short_name": "Смена",
+  "short_name": "MyShift",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -14,3 +14,4 @@
     }
   ]
 }
+
