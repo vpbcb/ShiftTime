@@ -405,7 +405,36 @@ button.pill{
   font-size:11.5px;
   color:var(--muted);
 }
-  
+
+/* ============================================================
+   ИЗМЕНЕНИЯ ТОЛЬКО ДЛЯ ГОРИЗОНТАЛЬНОЙ ОРИЕНТАЦИИ (landscape)
+   1) "Время на обратный полет" — без переноса, по центру,
+      подложка по ширине как кнопка Flight/Cabin, инпут сразу справа
+   ============================================================ */
+@media (min-width:640px) and (orientation:landscape){
+  .sixInline{
+    grid-template-columns: calc((100% - 10px) / 2) auto; /* как две кнопки с gap=10 */
+    align-items:center;
+  }
+  .fieldTitle.wrap2{
+    width:auto;                 /* отменяем width:100% */
+    white-space:nowrap;         /* без переноса */
+    justify-content:center;     /* по центру в подложке */
+    text-align:center;
+  }
+  .fieldTitle.wrap2 br{ display:none; } /* убираем перенос из HTML только в landscape */
+}
+
+/* ============================================================
+   2) Toast "Обновление данных. Ждите." — по центру экрана
+   (inline-стили переопределяем !important)
+   ============================================================ */
+#updateToast{
+  top:50% !important;
+  left:50% !important;
+  transform:translate(-50%,-50%) !important;
+}
+
 </style>
 </head>
 
@@ -427,6 +456,7 @@ button.pill{
 ">
   Обновление данных. Ждите.
 </div>
+
 <!-- FIXED HEADER -->
 <div class="headerFixed">
   <div class="headerWrap">
@@ -834,12 +864,55 @@ btnSave.textContent = "Сохранить";
 setTzMode("MSK");
 loadState();
 render();
+
+/* ============================================================
+   Toast по центру экрана + минимум 2 секунды
+   ============================================================ */
+const updateToast = document.getElementById("updateToast");
+let toastShownAt = 0;
+let toastHideTimer = null;
+
+function showUpdateToast(){
+  if(!updateToast) return;
+  clearTimeout(toastHideTimer);
+  toastShownAt = Date.now();
+  updateToast.style.display = "block";
+}
+function hideUpdateToast(){
+  if(!updateToast) return;
+  const elapsed = Date.now() - toastShownAt;
+  const remain = Math.max(0, 2000 - elapsed);
+  clearTimeout(toastHideTimer);
+  toastHideTimer = setTimeout(() => {
+    updateToast.style.display = "none";
+  }, remain);
+}
 </script>
 
 <script>
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js");
+  window.addEventListener("load", async () => {
+    const reg = await navigator.serviceWorker.register("./sw.js");
+
+    // Если SW присылает сообщения UPDATING/UPDATED — показываем тост
+    navigator.serviceWorker.addEventListener("message", (e) => {
+      const msg = e.data || {};
+      if (msg.type === "UPDATING") showUpdateToast();
+      if (msg.type === "UPDATED") hideUpdateToast();
+    });
+
+    // Дополнительно: когда найдено обновление SW — тоже показываем
+    reg.addEventListener("updatefound", () => {
+      const sw = reg.installing;
+      if(!sw) return;
+      showUpdateToast();
+      sw.addEventListener("statechange", () => {
+        if (sw.state === "installed") hideUpdateToast();
+      });
+    });
+
+    // Форс-проверка обновлений при старте
+    try { await reg.update(); } catch(_) {}
   });
 }
 </script>
