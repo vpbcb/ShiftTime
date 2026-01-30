@@ -404,16 +404,23 @@ button.pill{
     align-items:stretch;
   }
 
-  /* отдельный скролл в каждой колонке */
+  /* отдельный скролл слева */
   #inputsCard{
     height:100%;
     overflow:auto;
     -webkit-overflow-scrolling:touch;
   }
+
+  /* ✅ Правую колонку делаем "белым блоком" на всю высоту (чтобы высоты визуально совпали) */
   #rightCol{
     height:100%;
     overflow:auto;
     -webkit-overflow-scrolling:touch;
+
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px;
   }
 
   /* заголовки результатов на всю ширину белого блока (только landscape) */
@@ -481,7 +488,7 @@ button.pill{
 #scrollHint{
   position:fixed;
   right:12px;
-  bottom:62px;              /* чтобы не налезать на кнопку "Сбросить" */
+  bottom:62px;
   width:34px;
   height:34px;
   border-radius:999px;
@@ -492,7 +499,6 @@ button.pill{
   font-weight:900;
   z-index:2500;
 
-  /* видно и на белом, и на синем */
   background:rgba(0,0,0,0.55);
   color:#fff;
   border:1px solid rgba(255,255,255,0.6);
@@ -543,7 +549,6 @@ button.pill{
 <div class="scrollArea">
   <div class="wrap">
 
-    <!-- ✅ общий контейнер для landscape-2col -->
     <div id="scaleRoot">
 
       <!-- LEFT -->
@@ -651,7 +656,6 @@ button.pill{
           </div>
         </div>
 
-        <!-- ✅ этот блок должен иметь рамку и в portrait, и в landscape -->
         <div class="card" id="afterResultsCard">
           <div class="sixRow">
 
@@ -663,7 +667,6 @@ button.pill{
             </div>
 
             <div>
-              <!-- LDT: серый pill на всю ширину белого блока + по центру -->
               <div class="pill fullPill" id="ldtPill" style="width:100%; justify-self:stretch; display:flex; justify-content:center;">LDT</div>
 
               <div class="timesTop">
@@ -692,7 +695,7 @@ button.pill{
   </div>
 </div>
 
-<!-- Стрелка-индикатор "внизу есть контент" -->
+<!-- Стрелка-индикатор -->
 <div id="scrollHint" aria-hidden="true">↓</div>
 
 <!-- Оверлей подсказок -->
@@ -705,21 +708,12 @@ button.pill{
 </div>
 
 <script>
-/* =========================
-   Утилиты DOM
-   ========================= */
 const $ = (id) => document.getElementById(id);
 
-/* =========================
-   Состояние
-   ========================= */
 let cabincrew="нет", airport="UUEE", reinforced="нет", landings="1-2", extend="нет";
 let tzMode = "MSK"; // MSK | UTC | LOCAL
 let isSaved = false;
 
-/* =========================
-   Save button state
-   ========================= */
 function markUnsaved(){
   if(!isSaved) return;
   isSaved = false;
@@ -736,9 +730,6 @@ function markSaved(){
   b.textContent = "Сохранено";
 }
 
-/* =========================
-   Переключатели
-   ========================= */
 function setTzMode(mode){
   tzMode = mode;
   $("btnMSK")?.classList.toggle("active", tzMode==="MSK");
@@ -768,7 +759,7 @@ function setCrew(type){
   }
   markUnsaved();
   render();
-  setTimeout(updateScrollHint, 350); // дождаться анимации
+  setTimeout(updateScrollHint, 350);
 }
 
 function toggleAirport(){
@@ -800,9 +791,6 @@ function toggleExtend(){
   updateScrollHint();
 }
 
-/* =========================
-   Время / формат
-   ========================= */
 function parseTime(t){
   if(!t) return null;
   const parts = t.split(":").map(Number);
@@ -816,9 +804,6 @@ function fmt(m){
   return `${hh}:${mm}`;
 }
 
-/* =========================
-   TZ convert
-   ========================= */
 function getDeltaHours(){
   const sel = $("deltaUtc");
   const v = Number(sel?.value ?? 3);
@@ -836,9 +821,6 @@ function mskToLocal(mskMinutes){
   return mskToUtc(mskMinutes) + delta*60;
 }
 
-/* =========================
-   Расчет
-   ========================= */
 function calculate(){
   const depInput = parseTime($("depTime")?.value);
   const flt = parseTime($("flightTime")?.value);
@@ -896,9 +878,7 @@ function render(){
   $("outLdtLOC").textContent = fmt(mskToLocal(r.ldt_msk));
 }
 
-/* =========================
-   “Моментальный” пересчет
-   ========================= */
+/* моментальный пересчет */
 let lastDep = $("depTime")?.value ?? "";
 let lastFlt = $("flightTime")?.value ?? "";
 let lastTz = tzMode;
@@ -917,9 +897,7 @@ setInterval(() => {
   }
 }, 150);
 
-/* =========================
-   Подсказки
-   ========================= */
+/* подсказки */
 const HINTS = {
   delta: { title:"Δ UTC", text:"Часовой пояс относительно UTC для расчетов, с учетом местного времени." },
   extend: { title:"Продление КВС", text:"+2 часа / +3 часа (для усиленного экипажа)." },
@@ -938,9 +916,7 @@ function closeHint(){
   $("hintOverlay").classList.remove("open");
 }
 
-/* =========================
-   Сохранение / Загрузка / Сброс
-   ========================= */
+/* сохранение */
 function saveState(){
   const state = {
     depTime: $("depTime").value,
@@ -1027,9 +1003,7 @@ function resetState(){
   updateScrollHint();
 }
 
-/* =========================
-   Toast "Обновление данных. Ждите." (минимум 3 сек)
-   ========================= */
+/* Toast минимум 3 секунды */
 const updateToast = $("updateToast");
 let toastShownAt = 0;
 let toastHideTimer = null;
@@ -1050,10 +1024,7 @@ function hideUpdateToast(){
   }, remain);
 }
 
-/* =========================
-   Service Worker register + update apply
-   (полное обновление кэша при смене CACHE_NAME делает sw.js)
-   ========================= */
+/* Service Worker register */
 async function registerSW(){
   if(!("serviceWorker" in navigator)) return;
 
@@ -1086,44 +1057,47 @@ async function registerSW(){
   }catch(e){}
 }
 
-/* =========================
-   Стрелка “↓” — показываем если ниже есть контент
-   ========================= */
+/* ====== Стрелка “↓” — исправлено: исчезает внизу в landscape ====== */
 function isLandscape(){
   return window.matchMedia("(min-width:640px) and (orientation:landscape)").matches;
 }
-function getScrollTargets(){
-  if(isLandscape()){
-    return [$("inputsCard"), $("rightCol")].filter(Boolean);
-  }
-  return [document.querySelector(".scrollArea")].filter(Boolean);
-}
+
 function hasHiddenBelow(el){
-  const eps = 2;
-  return el.scrollHeight > el.clientHeight + eps &&
-         (el.scrollTop + el.clientHeight) < (el.scrollHeight - eps);
+  // мягкая проверка для устранения “залипания” из-за 1-3px погрешности
+  const eps = 6;
+  const maxTop = el.scrollHeight - el.clientHeight;
+  return (maxTop > eps) && (el.scrollTop < (maxTop - eps));
 }
+
 function updateScrollHint(){
   const hint = $("scrollHint");
   if(!hint) return;
-  const targets = getScrollTargets();
+
+  const targets = isLandscape()
+    ? [$("inputsCard"), $("rightCol")].filter(Boolean)
+    : [document.querySelector(".scrollArea")].filter(Boolean);
+
   const show = targets.length > 0 && targets.some(hasHiddenBelow);
   hint.classList.toggle("show", show);
 }
+
 function attachScrollHint(){
-  const targets = getScrollTargets();
-  targets.forEach(el => el.addEventListener("scroll", updateScrollHint, { passive:true }));
+  // Вешаем на все возможные скролл-контейнеры, чтобы после поворота не отваливалось
+  const all = [
+    document.querySelector(".scrollArea"),
+    $("inputsCard"),
+    $("rightCol")
+  ].filter(Boolean);
+
+  all.forEach(el => el.addEventListener("scroll", updateScrollHint, { passive:true }));
+
   window.addEventListener("resize", () => setTimeout(updateScrollHint, 0));
-  window.addEventListener("orientationchange", () => setTimeout(() => {
-    // перепривязка на случай смены режима скролла
-    updateScrollHint();
-  }, 160));
-  setTimeout(updateScrollHint, 80);
+  window.addEventListener("orientationchange", () => setTimeout(updateScrollHint, 200));
+
+  setTimeout(updateScrollHint, 120);
 }
 
-/* =========================
-   Init
-   ========================= */
+/* Init */
 window.addEventListener("load", () => {
   $("ccBlock")?.classList.remove("open");
   $("btnSave").textContent = "Сохранить";
