@@ -64,7 +64,7 @@ body{ margin:0; background:var(--bg); color:var(--ink); }
   padding:6px 14px;
 }
 
-/* скроллится только эта зона (в portrait) */
+/* скроллится только эта зона */
 .scrollArea{
   position:fixed;
   top:var(--fixedHeaderH);
@@ -334,17 +334,6 @@ button.pill{
 .halfTitle{ width:100%; justify-self:stretch; display:flex; }
 .halfBlock{ display:grid; gap:9px; }
 
-/* ✅ LDT: везде по центру + серая подложка на всю ширину белого блока */
-#ldtPill{
-  width:100%;
-  justify-self:stretch;
-  display:flex;
-  justify-content:center;
-}
-
-/* ================================
-   Portrait (узкие экраны)
-   ================================ */
 @media (max-width:639px){
   .results3{ grid-template-columns:1fr; }
   .fieldTitle.fullTitle{ width:100%; justify-self:stretch; }
@@ -370,22 +359,18 @@ button.pill{
   }
   .resultCard.durationCard .pill{ height:28px; }
   .resultCard.durationCard .timesTop{ padding-top:4px; }
+
+  #ldtPill{
+    width:100%;
+    justify-self:stretch;
+    display:flex;
+    justify-content:center;
+  }
 }
 
-/* ================================
-   Масштабируемый контейнер
-   ================================ */
-#scaleRoot{
-  width:100%;
-  height:100%;
-  transform-origin: top center;
-}
-
-/* ================================
-   LANDSCAPE: две колонки, одинаковая высота
-   + без скролла
-   + при нехватке места — масштабируем
-   ================================ */
+/* ==============================
+   LANDSCAPE: 2 колонки + отдельные скроллы
+   ============================== */
 @media (min-width:640px) and (orientation:landscape){
 
   .headerWrap,
@@ -394,10 +379,9 @@ button.pill{
     padding-left:14px;
     padding-right:14px;
   }
-
   .headerCard{ width:100%; }
 
-  /* ✅ без скролла вообще */
+  /* сама страница не скроллится */
   body{ overflow:hidden; }
   .scrollArea{ overflow:hidden; }
 
@@ -410,21 +394,26 @@ button.pill{
     overflow:hidden;
   }
 
-  /* scaleRoot становится двухколоночной сеткой */
+  /* 2 колонки */
   #scaleRoot{
     display:grid;
     grid-template-columns: 1fr 1fr;
     gap:10px;
     height:100%;
     overflow:hidden;
-    align-items:stretch; /* одинаковая высота */
+    align-items:stretch;
   }
 
-  /* обе колонки одинаковой высоты */
-  #inputsCard,
+  /* отдельный скролл в каждой колонке */
+  #inputsCard{
+    height:100%;
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+  }
   #rightCol{
     height:100%;
-    overflow:hidden; /* без скролла */
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
   }
 
   /* заголовки результатов на всю ширину белого блока (только landscape) */
@@ -436,32 +425,18 @@ button.pill{
     justify-self:stretch;
   }
 
-  #btnReset{ width:100%; }
-    /* ✅ справа делаем “одну большую белую карточку”, как слева */
-  #rightCol{
+  /* ✅ ВАЖНО: вернуть рамку блоку "Время на обратный полет" в landscape */
+  #afterResultsCard{
     background:#fff;
     border:1px solid var(--border);
     border-radius:12px;
     padding:10px;
-    height:100%;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
   }
 
-  /* ✅ внутренние карточки справа становятся “вложенными блоками” без своих рамок */
-  #rightCol > .card{
-    background:transparent;
-    border:0;
-    padding:0;
-    margin:0;
-  }
+  #btnReset{ width:100%; }
 }
 
-/* ================================
-   Оверлей подсказок
-   ================================ */
+/* оверлей подсказок */
 .hintOverlay{
   position:fixed;
   inset:0;
@@ -500,36 +475,53 @@ button.pill{
   color:var(--muted);
 }
 
-/* ================================
-   Toast: серый прямоугольник + черный текст + по центру
-   ================================ */
-#updateToast{
-  top:50% !important;
-  left:50% !important;
-  transform:translate(-50%,-50%) !important;
-  background:#e5e7eb !important;
-  color:#111 !important;
-  border:1px solid #cfd5e1 !important;
-  border-radius:12px !important;
-  box-shadow:0 10px 30px rgba(0,0,0,.16) !important;
+/* ==============================
+   Стрелка “вниз” справа снизу
+   ============================== */
+#scrollHint{
+  position:fixed;
+  right:12px;
+  bottom:62px;              /* чтобы не налезать на кнопку "Сбросить" */
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  font-weight:900;
+  z-index:2500;
+
+  /* видно и на белом, и на синем */
+  background:rgba(0,0,0,0.55);
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.6);
+
+  box-shadow:0 10px 26px rgba(0,0,0,0.18);
+  user-select:none;
+  pointer-events:none;
 }
+#scrollHint.show{ display:flex; }
 </style>
 </head>
 
 <body>
+
+<!-- Toast "Обновление данных. Ждите." (серый фон, черный текст, минимум 3 сек) -->
 <div id="updateToast" style="
   position:fixed;
-  top:72px;
   left:50%;
-  transform:translateX(-50%);
+  top:50%;
+  transform:translate(-50%,-50%);
   z-index:2000;
-  background:#1976d2;
-  color:#fff;
-  padding:10px 14px;
+  background:#e9edf3;
+  color:#111;
+  padding:12px 16px;
   border-radius:12px;
   font-family:Arial,sans-serif;
   font-weight:700;
   display:none;
+  border:1px solid #cfd5e1;
   box-shadow:0 10px 30px rgba(0,0,0,.18);
 ">
   Обновление данных. Ждите.
@@ -547,11 +539,11 @@ button.pill{
   </div>
 </div>
 
-<!-- SCROLLABLE CONTENT (portrait), fixed (landscape) -->
+<!-- SCROLLABLE CONTENT AREA -->
 <div class="scrollArea">
   <div class="wrap">
 
-    <!-- ✅ масштабируемый корневой контейнер -->
+    <!-- ✅ общий контейнер для landscape-2col -->
     <div id="scaleRoot">
 
       <!-- LEFT -->
@@ -659,6 +651,7 @@ button.pill{
           </div>
         </div>
 
+        <!-- ✅ этот блок должен иметь рамку и в portrait, и в landscape -->
         <div class="card" id="afterResultsCard">
           <div class="sixRow">
 
@@ -670,7 +663,8 @@ button.pill{
             </div>
 
             <div>
-              <div class="pill fullPill" id="ldtPill">LDT</div>
+              <!-- LDT: серый pill на всю ширину белого блока + по центру -->
+              <div class="pill fullPill" id="ldtPill" style="width:100%; justify-self:stretch; display:flex; justify-content:center;">LDT</div>
 
               <div class="timesTop">
                 <div class="multiTimes">
@@ -697,6 +691,9 @@ button.pill{
     <button type="button" id="btnReset" class="saveBtn resetBtn" onclick="resetState()">Сбросить</button>
   </div>
 </div>
+
+<!-- Стрелка-индикатор "внизу есть контент" -->
+<div id="scrollHint" aria-hidden="true">↓</div>
 
 <!-- Оверлей подсказок -->
 <div id="hintOverlay" class="hintOverlay" onclick="closeHint()">
@@ -749,6 +746,7 @@ function setTzMode(mode){
   $("btnLOCAL")?.classList.toggle("active", tzMode==="LOCAL");
   markUnsaved();
   render();
+  updateScrollHint();
 }
 
 function setCrew(type){
@@ -770,6 +768,7 @@ function setCrew(type){
   }
   markUnsaved();
   render();
+  setTimeout(updateScrollHint, 350); // дождаться анимации
 }
 
 function toggleAirport(){
@@ -777,24 +776,28 @@ function toggleAirport(){
   $("airportBtn").textContent = airport;
   markUnsaved();
   render();
+  updateScrollHint();
 }
 function toggleReinforced(){
   reinforced = (reinforced==="нет") ? "да" : "нет";
   $("reinforcedBtn").textContent = (reinforced==="да") ? "Да" : "Нет";
   markUnsaved();
   render();
+  updateScrollHint();
 }
 function toggleLandings(){
   landings = (landings==="1-2") ? "3-4" : "1-2";
   $("landingsBtn").textContent = (landings==="1-2") ? "1–2" : "3–4";
   markUnsaved();
   render();
+  updateScrollHint();
 }
 function toggleExtend(){
   extend = (extend==="нет") ? "да" : "нет";
   $("extendBtn").textContent = (extend==="да") ? "Да" : "Нет";
   markUnsaved();
   render();
+  updateScrollHint();
 }
 
 /* =========================
@@ -910,6 +913,7 @@ setInterval(() => {
     lastDep = depNow; lastFlt = fltNow; lastTz = tzMode; lastDelta = deltaNow;
     markUnsaved();
     render();
+    updateScrollHint();
   }
 }, 150);
 
@@ -1020,10 +1024,11 @@ function resetState(){
   $("btnSave").textContent = "Сохранить";
 
   render();
+  updateScrollHint();
 }
 
 /* =========================
-   Toast "Обновление данных. Ждите." (минимум 3 секунды)
+   Toast "Обновление данных. Ждите." (минимум 3 сек)
    ========================= */
 const updateToast = $("updateToast");
 let toastShownAt = 0;
@@ -1047,7 +1052,7 @@ function hideUpdateToast(){
 
 /* =========================
    Service Worker register + update apply
-   ВАЖНО: полное обновление кэша при смене CACHE_NAME выполняет sw.js.
+   (полное обновление кэша при смене CACHE_NAME делает sw.js)
    ========================= */
 async function registerSW(){
   if(!("serviceWorker" in navigator)) return;
@@ -1055,7 +1060,6 @@ async function registerSW(){
   try{
     const reg = await navigator.serviceWorker.register("./sw.js");
 
-    // сообщения от sw.js (если он их отправляет)
     navigator.serviceWorker.addEventListener("message", (e) => {
       const msg = e.data || {};
       if(msg.type === "UPDATING") showUpdateToast();
@@ -1070,7 +1074,6 @@ async function registerSW(){
 
       installing.addEventListener("statechange", () => {
         if(installing.state === "installed"){
-          // если это обновление (а не первая установка) — попросим активироваться
           if(navigator.serviceWorker.controller){
             try{ installing.postMessage({ type:"SKIP_WAITING" }); }catch(_){}
           }
@@ -1079,19 +1082,47 @@ async function registerSW(){
       });
     });
 
-    // при смене контроллера (новый SW активировался)
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      // если нужно — можно делать location.reload();
-      // но обычно достаточно, если sw.js кэширует правильно
-    });
-
-    // важно при смене CACHE_NAME
     try{ await reg.update(); }catch(_){}
   }catch(e){}
 }
 
 /* =========================
-   Инициализация
+   Стрелка “↓” — показываем если ниже есть контент
+   ========================= */
+function isLandscape(){
+  return window.matchMedia("(min-width:640px) and (orientation:landscape)").matches;
+}
+function getScrollTargets(){
+  if(isLandscape()){
+    return [$("inputsCard"), $("rightCol")].filter(Boolean);
+  }
+  return [document.querySelector(".scrollArea")].filter(Boolean);
+}
+function hasHiddenBelow(el){
+  const eps = 2;
+  return el.scrollHeight > el.clientHeight + eps &&
+         (el.scrollTop + el.clientHeight) < (el.scrollHeight - eps);
+}
+function updateScrollHint(){
+  const hint = $("scrollHint");
+  if(!hint) return;
+  const targets = getScrollTargets();
+  const show = targets.length > 0 && targets.some(hasHiddenBelow);
+  hint.classList.toggle("show", show);
+}
+function attachScrollHint(){
+  const targets = getScrollTargets();
+  targets.forEach(el => el.addEventListener("scroll", updateScrollHint, { passive:true }));
+  window.addEventListener("resize", () => setTimeout(updateScrollHint, 0));
+  window.addEventListener("orientationchange", () => setTimeout(() => {
+    // перепривязка на случай смены режима скролла
+    updateScrollHint();
+  }, 160));
+  setTimeout(updateScrollHint, 80);
+}
+
+/* =========================
+   Init
    ========================= */
 window.addEventListener("load", () => {
   $("ccBlock")?.classList.remove("open");
@@ -1100,33 +1131,9 @@ window.addEventListener("load", () => {
   loadState();
   render();
   registerSW();
+  attachScrollHint();
+  updateScrollHint();
 });
-</script>
-
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    const reg = await navigator.serviceWorker.register("./sw.js");
-
-    navigator.serviceWorker.addEventListener("message", (e) => {
-      const msg = e.data || {};
-      if (msg.type === "UPDATING") showUpdateToast();
-      if (msg.type === "UPDATED") hideUpdateToast();
-    });
-
-    reg.addEventListener("updatefound", () => {
-      const sw = reg.installing;
-      if(!sw) return;
-      showUpdateToast();
-      sw.addEventListener("statechange", () => {
-        if (sw.state === "installed") hideUpdateToast();
-      });
-    });
-
-    try { await reg.update(); } catch(_) {}
-  });
-}
 </script>
 
 </body>
