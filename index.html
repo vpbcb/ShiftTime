@@ -708,62 +708,117 @@ button.pill{
 </div>
 
 <script>
+/* =========================
+   Утилиты DOM
+   ========================= */
+const $ = (id) => document.getElementById(id);
+
+/* =========================
+   Состояние
+   ========================= */
 let cabincrew="нет", airport="UUEE", reinforced="нет", landings="1-2", extend="нет";
 let tzMode = "MSK"; // MSK | UTC | LOCAL
 let isSaved = false;
 
+/* =========================
+   Save button state
+   ========================= */
 function markUnsaved(){
   if(!isSaved) return;
   isSaved = false;
-  const b = document.getElementById("btnSave");
+  const b = $("btnSave");
+  if(!b) return;
   b.classList.remove("saved");
   b.textContent = "Сохранить";
 }
 function markSaved(){
   isSaved = true;
-  const b = document.getElementById("btnSave");
+  const b = $("btnSave");
+  if(!b) return;
   b.classList.add("saved");
   b.textContent = "Сохранено";
 }
 
+/* =========================
+   Переключатели
+   ========================= */
 function setTzMode(mode){
   tzMode = mode;
-  btnMSK.classList.toggle("active", tzMode==="MSK");
-  btnUTC.classList.toggle("active", tzMode==="UTC");
-  btnLOCAL.classList.toggle("active", tzMode==="LOCAL");
+  $("btnMSK")?.classList.toggle("active", tzMode==="MSK");
+  $("btnUTC")?.classList.toggle("active", tzMode==="UTC");
+  $("btnLOCAL")?.classList.toggle("active", tzMode==="LOCAL");
   markUnsaved();
   render();
-  applyLandscapeScaleSoon();
 }
 
 function setCrew(type){
   cabincrew=(type==="cabin")?"да":"нет";
-  btnFlight.classList.toggle("active",cabincrew==="нет");
-  btnCabin.classList.toggle("active",cabincrew==="да");
 
-  if(cabincrew==="да") ccBlock.classList.add("open");
-  else ccBlock.classList.remove("open");
+  $("btnFlight")?.classList.toggle("active",cabincrew==="нет");
+  $("btnCabin")?.classList.toggle("active",cabincrew==="да");
+
+  const cc = $("ccBlock");
+  if(cc){
+    if(cabincrew==="да") cc.classList.add("open");
+    else cc.classList.remove("open");
+  }
 
   if(cabincrew==="нет"){
     airport="UUEE"; reinforced="нет";
-    airportBtn.textContent="UUEE";
-    reinforcedBtn.textContent="Нет";
+    $("airportBtn").textContent="UUEE";
+    $("reinforcedBtn").textContent="Нет";
   }
   markUnsaved();
   render();
-  applyLandscapeScaleSoon(350); /* дождаться анимации */
 }
 
-function toggleAirport(){ airport=airport==="UUEE"?"другой":"UUEE"; airportBtn.textContent=airport; markUnsaved(); render(); applyLandscapeScaleSoon(); }
-function toggleReinforced(){ reinforced=reinforced==="нет"?"да":"нет"; reinforcedBtn.textContent=reinforced==="да"?"Да":"Нет"; markUnsaved(); render(); applyLandscapeScaleSoon(); }
-function toggleLandings(){ landings=landings==="1-2"?"3-4":"1-2"; landingsBtn.textContent=landings==="1-2"?"1–2":"3–4"; markUnsaved(); render(); applyLandscapeScaleSoon(); }
-function toggleExtend(){ extend=extend==="нет"?"да":"нет"; extendBtn.textContent=extend==="да"?"Да":"Нет"; markUnsaved(); render(); applyLandscapeScaleSoon(); }
+function toggleAirport(){
+  airport = (airport==="UUEE") ? "другой" : "UUEE";
+  $("airportBtn").textContent = airport;
+  markUnsaved();
+  render();
+}
+function toggleReinforced(){
+  reinforced = (reinforced==="нет") ? "да" : "нет";
+  $("reinforcedBtn").textContent = (reinforced==="да") ? "Да" : "Нет";
+  markUnsaved();
+  render();
+}
+function toggleLandings(){
+  landings = (landings==="1-2") ? "3-4" : "1-2";
+  $("landingsBtn").textContent = (landings==="1-2") ? "1–2" : "3–4";
+  markUnsaved();
+  render();
+}
+function toggleExtend(){
+  extend = (extend==="нет") ? "да" : "нет";
+  $("extendBtn").textContent = (extend==="да") ? "Да" : "Нет";
+  markUnsaved();
+  render();
+}
 
-function parseTime(t){ if(!t) return null; const [a,b]=t.split(":").map(Number); return a*60+b; }
-function fmt(m){ m=(m+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
+/* =========================
+   Время / формат
+   ========================= */
+function parseTime(t){
+  if(!t) return null;
+  const parts = t.split(":").map(Number);
+  if(parts.length < 2 || !Number.isFinite(parts[0]) || !Number.isFinite(parts[1])) return null;
+  return parts[0]*60 + parts[1];
+}
+function fmt(m){
+  m = (m + 1440) % 1440;
+  const hh = String(Math.floor(m/60)).padStart(2,"0");
+  const mm = String(m%60).padStart(2,"0");
+  return `${hh}:${mm}`;
+}
 
+/* =========================
+   TZ convert
+   ========================= */
 function getDeltaHours(){
-  const v = Number(deltaUtc?.value || 3);
+  const sel = $("deltaUtc");
+  const v = Number(sel?.value ?? 3);
   return Number.isFinite(v) ? v : 3;
 }
 function toMskMinutes(inputMinutes){
@@ -778,19 +833,25 @@ function mskToLocal(mskMinutes){
   return mskToUtc(mskMinutes) + delta*60;
 }
 
+/* =========================
+   Расчет
+   ========================= */
 function calculate(){
-  const depInput=parseTime(depTime.value);
-  const flt=parseTime(flightTime.value);
-  if(depInput==null||flt==null) return null;
+  const depInput = parseTime($("depTime")?.value);
+  const flt = parseTime($("flightTime")?.value);
+  if(depInput==null || flt==null) return null;
 
   const dep = toMskMinutes(depInput);
 
   const checkIn = dep - ((cabincrew==="да" && airport==="UUEE") ? 90 : 60);
-  const isDay = checkIn>=361 && checkIn<=1319;
+  const isDay = (checkIn>=361 && checkIn<=1319);
 
-  let norm=null;
+  let norm = null;
+
   if(cabincrew==="да" && reinforced==="да"){
-    norm = (landings==="1-2") ? (extend==="да"?960:780) : (extend==="да"?900:720);
+    norm = (landings==="1-2")
+      ? (extend==="да"?960:780)
+      : (extend==="да"?900:720);
   } else {
     if(landings==="1-2") norm = isDay ? (extend==="да"?840:720) : (extend==="да"?780:660);
     if(landings==="3-4") norm = isDay ? (extend==="да"?750:630) : (extend==="да"?720:600);
@@ -807,48 +868,54 @@ function calculate(){
 }
 
 function render(){
-  const r=calculate();
-  if(!r){
-    outDuration.textContent="—";
-    outEngMSK.textContent="—"; outEngUTC.textContent="—"; outEngLOC.textContent="—";
-    outEndMSK.textContent="—"; outEndUTC.textContent="—"; outEndLOC.textContent="—";
-    outLdtMSK.textContent="—"; outLdtUTC.textContent="—"; outLdtLOC.textContent="—";
-    return;
-  }
+  const r = calculate();
+  const setAllDash = () => {
+    $("outDuration").textContent="—";
+    $("outEngMSK").textContent="—"; $("outEngUTC").textContent="—"; $("outEngLOC").textContent="—";
+    $("outEndMSK").textContent="—"; $("outEndUTC").textContent="—"; $("outEndLOC").textContent="—";
+    $("outLdtMSK").textContent="—"; $("outLdtUTC").textContent="—"; $("outLdtLOC").textContent="—";
+  };
 
-  outDuration.textContent = fmt(r.duration);
+  if(!r){ setAllDash(); return; }
 
-  outEngMSK.textContent = fmt(r.eng_msk);
-  outEngUTC.textContent = fmt(mskToUtc(r.eng_msk));
-  outEngLOC.textContent = fmt(mskToLocal(r.eng_msk));
+  $("outDuration").textContent = fmt(r.duration);
 
-  outEndMSK.textContent = fmt(r.end_msk);
-  outEndUTC.textContent = fmt(mskToUtc(r.end_msk));
-  outEndLOC.textContent = fmt(mskToLocal(r.end_msk));
+  $("outEngMSK").textContent = fmt(r.eng_msk);
+  $("outEngUTC").textContent = fmt(mskToUtc(r.eng_msk));
+  $("outEngLOC").textContent = fmt(mskToLocal(r.eng_msk));
 
-  outLdtMSK.textContent = fmt(r.ldt_msk);
-  outLdtUTC.textContent = fmt(mskToUtc(r.ldt_msk));
-  outLdtLOC.textContent = fmt(mskToLocal(r.ldt_msk));
+  $("outEndMSK").textContent = fmt(r.end_msk);
+  $("outEndUTC").textContent = fmt(mskToUtc(r.end_msk));
+  $("outEndLOC").textContent = fmt(mskToLocal(r.end_msk));
+
+  $("outLdtMSK").textContent = fmt(r.ldt_msk);
+  $("outLdtUTC").textContent = fmt(mskToUtc(r.ldt_msk));
+  $("outLdtLOC").textContent = fmt(mskToLocal(r.ldt_msk));
 }
 
-/* моментальный пересчет */
-let lastDep=depTime.value, lastFlt=flightTime.value;
-let lastTz=tzMode, lastDelta=(deltaUtc?deltaUtc.value:"3");
-setInterval(()=>{
-  const d = (window.deltaUtc ? deltaUtc.value : "3");
-  if(depTime.value!==lastDep || flightTime.value!==lastFlt || tzMode!==lastTz || d!==lastDelta){
-    lastDep=depTime.value; lastFlt=flightTime.value; lastTz=tzMode; lastDelta=d;
+/* =========================
+   “Моментальный” пересчет
+   ========================= */
+let lastDep = $("depTime")?.value ?? "";
+let lastFlt = $("flightTime")?.value ?? "";
+let lastTz = tzMode;
+let lastDelta = $("deltaUtc")?.value ?? "3";
+
+setInterval(() => {
+  const depNow = $("depTime")?.value ?? "";
+  const fltNow = $("flightTime")?.value ?? "";
+  const deltaNow = $("deltaUtc")?.value ?? "3";
+
+  if(depNow !== lastDep || fltNow !== lastFlt || tzMode !== lastTz || deltaNow !== lastDelta){
+    lastDep = depNow; lastFlt = fltNow; lastTz = tzMode; lastDelta = deltaNow;
     markUnsaved();
     render();
-    applyLandscapeScaleSoon();
   }
-},150);
+}, 150);
 
-/* подсказки */
-const hintOverlay = document.getElementById("hintOverlay");
-const hintTitleEl = document.getElementById("hintTitle");
-const hintTextEl = document.getElementById("hintText");
-
+/* =========================
+   Подсказки
+   ========================= */
 const HINTS = {
   delta: { title:"Δ UTC", text:"Часовой пояс относительно UTC для расчетов, с учетом местного времени." },
   extend: { title:"Продление КВС", text:"+2 часа / +3 часа (для усиленного экипажа)." },
@@ -859,19 +926,23 @@ const HINTS = {
 function openHint(key){
   const h = HINTS[key];
   if(!h) return;
-  hintTitleEl.textContent = h.title;
-  hintTextEl.textContent = h.text;
-  hintOverlay.classList.add("open");
+  $("hintTitle").textContent = h.title;
+  $("hintText").textContent = h.text;
+  $("hintOverlay").classList.add("open");
 }
-function closeHint(){ hintOverlay.classList.remove("open"); }
+function closeHint(){
+  $("hintOverlay").classList.remove("open");
+}
 
-/* сохранение */
+/* =========================
+   Сохранение / Загрузка / Сброс
+   ========================= */
 function saveState(){
   const state = {
-    depTime: depTime.value,
-    flightTime: flightTime.value,
+    depTime: $("depTime").value,
+    flightTime: $("flightTime").value,
     tzMode,
-    deltaUtc: deltaUtc.value,
+    deltaUtc: $("deltaUtc").value,
     cabincrew,
     airport,
     reinforced,
@@ -888,28 +959,28 @@ function loadState(){
     if(!raw) return;
     const s = JSON.parse(raw);
 
-    if(s.depTime) depTime.value = s.depTime;
-    if(s.flightTime) flightTime.value = s.flightTime;
-    if(s.deltaUtc) deltaUtc.value = String(s.deltaUtc);
+    if(s.depTime) $("depTime").value = s.depTime;
+    if(s.flightTime) $("flightTime").value = s.flightTime;
+    if(s.deltaUtc) $("deltaUtc").value = String(s.deltaUtc);
 
-    if(s.tzMode) setTzMode(s.tzMode);
+    if(s.tzMode) setTzMode(s.tzMode); else setTzMode("MSK");
     if(s.cabincrew === "да") setCrew("cabin"); else setCrew("flight");
 
     if(s.airport){
       airport = s.airport;
-      airportBtn.textContent = airport;
+      $("airportBtn").textContent = airport;
     }
     if(s.reinforced){
       reinforced = s.reinforced;
-      reinforcedBtn.textContent = (reinforced==="да") ? "Да" : "Нет";
+      $("reinforcedBtn").textContent = (reinforced==="да") ? "Да" : "Нет";
     }
     if(s.landings){
       landings = s.landings;
-      landingsBtn.textContent = (landings==="1-2") ? "1–2" : "3–4";
+      $("landingsBtn").textContent = (landings==="1-2") ? "1–2" : "3–4";
     }
     if(s.extend){
       extend = s.extend;
-      extendBtn.textContent = (extend==="да") ? "Да" : "Нет";
+      $("extendBtn").textContent = (extend==="да") ? "Да" : "Нет";
     }
 
     render();
@@ -920,97 +991,41 @@ function loadState(){
 function resetState(){
   localStorage.removeItem("shiftcalc_state");
 
-  depTime.value = "05:00";
-  flightTime.value = "02:30";
-  deltaUtc.value = "3";
+  $("depTime").value = "05:00";
+  $("flightTime").value = "02:30";
+  $("deltaUtc").value = "3";
 
   tzMode = "MSK";
-  btnMSK.classList.add("active"); btnUTC.classList.remove("active"); btnLOCAL.classList.remove("active");
+  $("btnMSK")?.classList.add("active");
+  $("btnUTC")?.classList.remove("active");
+  $("btnLOCAL")?.classList.remove("active");
 
   cabincrew="нет";
-  btnFlight.classList.add("active"); btnCabin.classList.remove("active");
-  ccBlock.classList.remove("open");
+  $("btnFlight")?.classList.add("active");
+  $("btnCabin")?.classList.remove("active");
+  $("ccBlock")?.classList.remove("open");
 
   airport="UUEE";
   reinforced="нет";
   landings="1-2";
   extend="нет";
 
-  airportBtn.textContent = "UUEE";
-  reinforcedBtn.textContent = "Нет";
-  landingsBtn.textContent = "1–2";
-  extendBtn.textContent = "Нет";
+  $("airportBtn").textContent = "UUEE";
+  $("reinforcedBtn").textContent = "Нет";
+  $("landingsBtn").textContent = "1–2";
+  $("extendBtn").textContent = "Нет";
 
   isSaved = false;
-  const b = document.getElementById("btnSave");
-  b.classList.remove("saved");
-  b.textContent = "Сохранить";
+  $("btnSave").classList.remove("saved");
+  $("btnSave").textContent = "Сохранить";
 
   render();
-  applyLandscapeScaleSoon(80);
 }
 
-ccBlock.classList.remove("open");
-btnSave.textContent = "Сохранить";
-setTzMode("MSK");
-loadState();
-render();
-
-/* ============================================================
-   ✅ LANDSCAPE: автомасштабирование, если не помещается на экране
-   (без скролла)
-   ============================================================ */
-let scaleTimer = null;
-
-function isLandscapeNow(){
-  return window.matchMedia("(orientation: landscape)").matches && window.innerWidth >= 640;
-}
-
-function applyLandscapeScale(){
-  const root = document.getElementById("scaleRoot");
-  const header = document.querySelector(".headerFixed");
-  const footer = document.querySelector(".footerFixed");
-  if(!root || !header || !footer) return;
-
-  if(!isLandscapeNow()){
-    root.style.transform = "";
-    return;
-  }
-
-  // сбросим масштаб, чтобы правильно измерить высоту контента
-  root.style.transform = "scale(1)";
-
-  const availableH = window.innerHeight - header.offsetHeight - footer.offsetHeight;
-
-  // Реальная высота содержимого root
-  const contentH = root.scrollHeight;
-
-  if(contentH <= availableH){
-    root.style.transform = "scale(1)";
-    return;
-  }
-
-  const scale = availableH / contentH;
-
-  // защитный минимум, чтобы не стало слишком мелко
-  const safeScale = Math.max(scale, 0.80);
-
-  root.style.transform = `scale(${safeScale})`;
-}
-
-function applyLandscapeScaleSoon(delay=0){
-  clearTimeout(scaleTimer);
-  scaleTimer = setTimeout(applyLandscapeScale, delay);
-}
-
-window.addEventListener("load", () => applyLandscapeScaleSoon(0));
-window.addEventListener("resize", () => applyLandscapeScaleSoon(0));
-window.addEventListener("orientationchange", () => applyLandscapeScaleSoon(120));
-
-/* ============================================================
-   Toast по центру экрана + минимум 3 секунды
-   ============================================================ */
-const updateToast = document.getElementById("updateToast");
+/* =========================
+   Toast "Обновление данных. Ждите." (минимум 3 секунды)
+   ========================= */
+const updateToast = $("updateToast");
 let toastShownAt = 0;
 let toastHideTimer = null;
 
@@ -1029,7 +1044,65 @@ function hideUpdateToast(){
     updateToast.style.display = "none";
   }, remain);
 }
+
+/* =========================
+   Service Worker register + update apply
+   ВАЖНО: полное обновление кэша при смене CACHE_NAME выполняет sw.js.
+   ========================= */
+async function registerSW(){
+  if(!("serviceWorker" in navigator)) return;
+
+  try{
+    const reg = await navigator.serviceWorker.register("./sw.js");
+
+    // сообщения от sw.js (если он их отправляет)
+    navigator.serviceWorker.addEventListener("message", (e) => {
+      const msg = e.data || {};
+      if(msg.type === "UPDATING") showUpdateToast();
+      if(msg.type === "UPDATED") hideUpdateToast();
+    });
+
+    reg.addEventListener("updatefound", () => {
+      const installing = reg.installing;
+      if(!installing) return;
+
+      showUpdateToast();
+
+      installing.addEventListener("statechange", () => {
+        if(installing.state === "installed"){
+          // если это обновление (а не первая установка) — попросим активироваться
+          if(navigator.serviceWorker.controller){
+            try{ installing.postMessage({ type:"SKIP_WAITING" }); }catch(_){}
+          }
+          hideUpdateToast();
+        }
+      });
+    });
+
+    // при смене контроллера (новый SW активировался)
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      // если нужно — можно делать location.reload();
+      // но обычно достаточно, если sw.js кэширует правильно
+    });
+
+    // важно при смене CACHE_NAME
+    try{ await reg.update(); }catch(_){}
+  }catch(e){}
+}
+
+/* =========================
+   Инициализация
+   ========================= */
+window.addEventListener("load", () => {
+  $("ccBlock")?.classList.remove("open");
+  $("btnSave").textContent = "Сохранить";
+  setTzMode("MSK");
+  loadState();
+  render();
+  registerSW();
+});
 </script>
+
 
 <script>
 if ("serviceWorker" in navigator) {
